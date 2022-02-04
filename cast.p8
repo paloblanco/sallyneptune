@@ -5,7 +5,7 @@ __lua__
 #include thing.lua 
 #include util.lua
 #include player.lua
-#include cast.lua
+#include main.lua
 
 
 

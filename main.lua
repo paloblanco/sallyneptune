@@ -1,21 +1,3 @@
--- field of view
-fov = 0.2 -- 0.2 = 72 degrees
-
--- true: to get wall patterns
--- based on distance
-
-patterns={
-[0]=0b0000000000000000,
-0b0000000000000001,
-0b0000010000000001,
-0b0000010000000101,
-0b0000010100000101,
-0b0000010100100101,
-0b1000010100100101,
-0b1010010100100101,
-0b1010010110100101}
-
-
 
 
 function _init()
@@ -32,7 +14,6 @@ function _init()
 end
 
 
-
 function _update()
 	
 	-- moving walls
@@ -45,64 +26,9 @@ function _update()
 	
 	-- control player
 	
-	local dx=0
-	local dy=0
-
-	if (btn(❎)) then
-		-- strafe
-		if (btn(⬅️)) dx-=1
-		if (btn(➡️)) dx+=1
-	else
-		-- turn
-		if (btn(⬅️)) pl.d+=0.02
-		if (btn(➡️)) pl.d-=0.02
-	end
-	
-	-- forwards / backwards
-	if (btn(⬆️)) dy+= 1
-	if (btn(⬇️)) dy-= 1
-	
-	spd = sqrt(dx*dx+dy*dy)
-	if (spd) then
-	
-		spd = 0.1 / spd
-		dx *= spd
-		dy *= spd
-		
-		pl.dx += cos(pl.d-0.25) * dx
-		pl.dy += sin(pl.d-0.25) * dx
-		pl.dx += cos(pl.d+0.00) * dy
-		pl.dy += sin(pl.d+0.00) * dy
-	
-	end
-	
-	local q = pl.z - 0.6
-	if (mz(pl.x+pl.dx,pl.y) > q)
-	then pl.x += pl.dx end
-	if (mz(pl.x,pl.y+pl.dy) > q)
-	then pl.y += pl.dy end
-	
-	-- friction
-	pl.dx *= 0.6
-	pl.dy *= 0.6
-	
-	-- z means player feet
-	if (pl.z >= mz(pl.x,pl.y) and pl.dz >=0) then
-		pl.z = mz(pl.x,pl.y)
-		pl.dz = 0
-	else
-		pl.dz=pl.dz+0.01
-		pl.z =pl.z + pl.dz
-	end
-
-	-- jetpack / jump when standing
-	if (btn(4)) then 
-		if (pl.jetpack or 
-					 mz(pl.x,pl.y) < pl.z+0.1)
-		then
-			pl.dz=-0.15
-		end
-	end
+    for aa in all(alist) do
+        aa:update()
+    end
 
 end
 

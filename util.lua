@@ -1,3 +1,20 @@
+
+-- field of view
+fov = 0.2 -- 0.2 = 72 degrees
+
+-- true: to get wall patterns
+-- based on distance
+
+patterns={
+[0]=0b0000000000000000,
+0b0000000000000001,
+0b0000010000000001,
+0b0000010000000101,
+0b0000010100000101,
+0b0000010100100101,
+0b1000010100100101,
+0b1010010100100101,
+0b1010010110100101}
 -- map z
 function mz(x,y)
 	return 16-mget(x,y)*0.125
