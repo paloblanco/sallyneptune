@@ -68,3 +68,12 @@ function player:update()
 		end
 	end
 end
+
+function player:return_view()
+    local v={}
+	v.x0 = cos(self.d+fov/2) 
+	v.y0 = sin(self.d+fov/2)
+	v.x1 = cos(self.d-fov/2)
+	v.y1 = sin(self.d-fov/2)
+    return v
+end

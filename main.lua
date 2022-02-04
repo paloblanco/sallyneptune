@@ -11,6 +11,7 @@ function _init()
 			mset(x,y,mget(x,y)*3)
 		end
 	end
+	orb = actor:new({x=12,y=12,z=15})
 end
 
 
@@ -38,25 +39,19 @@ function draw_3d()
 	
 	-- calculate view plane
 	
-	local v={}
-	v.x0 = cos(pl.d+fov/2) 
-	v.y0 = sin(pl.d+fov/2)
-	v.x1 = cos(pl.d-fov/2)
-	v.y1 = sin(pl.d-fov/2)
-	
-	
+	local v = pl:return_view()
+	-- camera based on player pos
+	local x=pl.x
+	local y=pl.y
+	-- (player eye 1.5 units high)
+	local z=pl.z-1.5
+		
 	for sx=0,127,2 do
 	
 		-- make all of these local
 		-- for speed
 		local sy=127
 	
-		-- camera based on player pos
-		local x=pl.x
-		local y=pl.y
-		-- (player eye 1.5 units high)
-		local z=pl.z-1.5
-
 		local ix=flr(x)
 		local iy=flr(y)
 		local tdist=0
@@ -173,9 +168,6 @@ function draw_3d()
 		end   
 		end -- skipping
 	end -- sx
-
-	cursor(0,0) color(7)
-	print("cpu:"..flr(stat(1)*100).."%",1,1)
 end
 
 
@@ -185,10 +177,16 @@ function _draw()
 	-- to do: sky? stars?
 	rectfill(0,0,127,127,12)
 	draw_3d()
+	orb:draw_simple(pl.x,pl.y,pl.z,pl.d)
 	-- draw map
 	if (false) then
 		mapdraw(0,0,0,0,32,32)
 		pset(pl.x*8,pl.y*8,12)
 		pset(pl.x*8+cos(pl.d)*2,pl.y*8+sin(pl.d)*2,13)
 	end
+	cursor(0,0) color(7)
+	print("cpu:"..flr(stat(1)*100).."%",1,1)
+	print("pl :"..pl.x.." "..pl.y.." "..pl.z)
+	print("orb:"..orb.x.." "..orb.y.." "..orb.z)
+
 end
