@@ -4,7 +4,7 @@ function _init()
 	-- create player
 	pl = player:new()
     alist = {}
-    add(alist,pl)
+    -- add(alist,pl)
 	-- map
 	for y=0,31 do
 		for x=0,31 do
@@ -12,11 +12,13 @@ function _init()
 		end
 	end
 	orb = actor:new({x=12,y=12,z=16})
+	add(alist,orb)
 end
 
 
 function _update()
 	
+	pl:update()
     for aa in all(alist) do
         aa:update()
     end
@@ -181,17 +183,21 @@ end
 
 function _draw()
 	cls()
-	
 	-- to do: sky? stars?
 	rectfill(0,0,127,127,12)
 	draw_3d()
-	orb:draw_simple(pl.x,pl.y,pl.z,pl.d)
-	-- draw map
-	if (false) then
-		mapdraw(0,0,0,0,32,32)
-		pset(pl.x*8,pl.y*8,12)
-		pset(pl.x*8+cos(pl.d)*2,pl.y*8+sin(pl.d)*2,13)
+	
+	-- sort sprites
+	for aa in all(alist) do
+		aa:get_cam_params(pl.x,pl.y,pl.z,pl.d)
 	end
+	-- SORT HERE
+
+	-- draw sprites
+	for aa in all(alist) do
+		aa:draw_simple(pl.x,pl.y,pl.z,pl.d)
+	end
+
 	cursor(0,0) color(7)
 	print("cpu:"..flr(stat(1)*100).."%",1,1)
 	print("pl :"..pl.d)
