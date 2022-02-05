@@ -15,7 +15,7 @@ function actor:draw_simple(x,y,z,dir) -- needs view plane and player x,y,z,dir
     if (rel_ang > .5) rel_ang = rel_ang-1
     if (abs(rel_ang) > fov/2) return -- escape function if not in fov
     local dist = sqrt((dx)^2 + (dy)^2)
-    dist = dist*cos(rel_ang)
+    dist = dist*cos(rel_ang)/cos(.1)
     local sx = (-rel_ang*2/fov)*64+64
     local sy = (dz*64/dist)+64
     --circfill(sx,sy,unit/dist,11)
