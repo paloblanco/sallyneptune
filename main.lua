@@ -17,16 +17,6 @@ end
 
 function _update()
 	
-	-- moving walls
-	
-	-- for x=10,18 do
-	-- 	for y=26,28 do
-	-- 		mset(x,y,34+cos(t()/4+x/14)*19)
-	-- 	end
-	-- end
-	
-	-- control player
-	
     for aa in all(alist) do
         aa:update()
     end
@@ -84,8 +74,12 @@ function draw_3d()
 		
 		-- start skipping
 		local skip=true
-		
+		local wall_prev=false
+		local lower_elevation=false
+		lowcount=0
+
 		while (skip) do
+			
 			
 			if (dist_x < dist_y) then
 				ix=ix+dir_x
@@ -127,16 +121,22 @@ function draw_3d()
 			
 			if (sy1 < sy) then
 				
-				rectfill(sx,sy1-1,sx+1,sy-2,
+				rectfill(sx,sy1-1,sx+1,sy,
 					sget((celz0*2)%16,8))
-				-- line if lower
-				line(sx,sy1-1,sx+1,sy1-1,5)
-				if (celz > celz0) then
-					line(sx,sy1-1,sx+1,sy1-1,0)
+				line(sx,sy,sx+1,sy,5)
+				if (wall_prev) then
+					line(sx,sy,sx+1,sy,0)
+					wall_prev=false
 				end	
+				if lower_elevation then
+					line(sx,sy,sx+1,sy,0)
+					lower_elevation=false
+				end
 				sy=sy1
 			end
-			
+			-- flip()
+
+
 			-- draw wall if higher
 			
 			if (celz < celz0) then
@@ -159,12 +159,20 @@ function draw_3d()
 					rectfill(sx,sy1-1,sx+1,sy,
 					 wcol)
 					line(sx,sy,sx+1,sy,0)
-					line(sx,sy1-1,sx+1,sy1-1,0)
+					--line(sx,sy1-1,sx+1,sy1-1,0)
 					 sy=sy1
 					
 					fillp()
+					wall_prev=true
 				end
+				-- flip()
 			end
+			--lower floor?
+			if (celz>celz0) then
+				lower_elevation=true
+				lowcount = lowcount +1
+			end
+			
 		end   
 		end -- skipping
 	end -- sx
@@ -188,5 +196,6 @@ function _draw()
 	print("cpu:"..flr(stat(1)*100).."%",1,1)
 	print("pl :"..pl.d)
 	print("orb:"..orb.x.." "..orb.y.." "..orb.z)
+	print("lowcount: "..lowcount)
 
 end
