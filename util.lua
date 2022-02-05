@@ -1,6 +1,11 @@
 
+function tan(ang)
+    return (sin(ang)/cos(ang))
+end
+
 -- field of view
 fov = 0.2 -- 0.2 = 72 degrees
+unit= abs(64/tan(fov*.5)) -- how big one block is
 
 -- true: to get wall patterns
 -- based on distance

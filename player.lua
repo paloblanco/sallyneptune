@@ -21,6 +21,7 @@ function player:update()
 		if (btn(⬅️)) self.d+=0.02
 		if (btn(➡️)) self.d-=0.02
 	end
+    self.d = self.d%1
 	
 	-- forwards / backwards
 	if (btn(⬆️)) dy+= 1
