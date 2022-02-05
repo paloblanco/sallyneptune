@@ -11,7 +11,7 @@ function _init()
 			mset(x,y,mget(x,y)*3)
 		end
 	end
-	orb = actor:new({x=12,y=12,z=15})
+	orb = actor:new({x=12,y=12,z=16})
 end
 
 
@@ -19,11 +19,11 @@ function _update()
 	
 	-- moving walls
 	
-	for x=10,18 do
-		for y=26,28 do
-			mset(x,y,34+cos(t()/4+x/14)*19)
-		end
-	end
+	-- for x=10,18 do
+	-- 	for y=26,28 do
+	-- 		mset(x,y,34+cos(t()/4+x/14)*19)
+	-- 	end
+	-- end
 	
 	-- control player
 	
