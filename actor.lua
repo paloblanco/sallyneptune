@@ -30,5 +30,8 @@ function actor:draw_simple(x,y,z,dir) -- needs view plane and player x,y,z,dir
     local sy = (dz*64/dist)+64
     --circfill(sx,sy,unit/dist,11)
     local hw = self.vwidth*unit/dist
+    fillp(patterns[min(flr(dist/3),8)])
     sspr(self.sp%16,8*(self.sp\16),8,8,sx-.5*hw,sy-hw,hw,hw)
+    fillp()
 end
+

@@ -1,5 +1,3 @@
-
-
 function _init()
 	-- create player
 	pl = player:new()
