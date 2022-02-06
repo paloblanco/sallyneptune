@@ -20,7 +20,19 @@ patterns={
 0b1000010100100101,
 0b1010010100100101,
 0b1010010110100101}
+
 -- map z
 function mz(x,y)
 	return 16-mget(x,y)*0.125
+end
+
+-- sort on dist_cam
+function sort(a)
+    for i=1,#a do
+        local j = i
+        while j > 1 and a[j-1].dist_cam < a[j].dist_cam do
+            a[j],a[j-1] = a[j-1],a[j]
+            j = j - 1
+        end
+    end
 end

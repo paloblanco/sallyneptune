@@ -13,6 +13,8 @@ function _init()
 	end
 	orb = actor:new({x=12,y=12,z=16})
 	add(alist,orb)
+	orb2 = actor:new({x=10,y=11,z=16})
+	add(alist,orb2)
 end
 
 
@@ -192,7 +194,7 @@ function _draw()
 		aa:get_cam_params(pl.x,pl.y,pl.z,pl.d)
 	end
 	-- SORT HERE
-
+	sort(alist)
 	-- draw sprites
 	for aa in all(alist) do
 		aa:draw_simple(pl.x,pl.y,pl.z,pl.d)
