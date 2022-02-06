@@ -35,3 +35,5 @@ function actor:draw_simple(x,y,z,dir) -- needs view plane and player x,y,z,dir
     fillp()
 end
 
+function actor:draw_best(x,y,z,dir)
+end
