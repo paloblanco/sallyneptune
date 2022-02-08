@@ -208,7 +208,8 @@ function _draw()
 	-- draw sprites
 	for aa in all(alist) do
 		-- aa:draw_simple(pl.x,pl.y,pl.z,pl.d)
-		aa:draw_dumb(pl.x,pl.y,pl.z,pl.d)
+		-- aa:draw_dumb(pl.x,pl.y,pl.z,pl.d)
+		aa:draw_best(pl.x,pl.y,pl.z,pl.d)
 	end
 
 	cursor(0,0) color(7)
