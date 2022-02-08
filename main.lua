@@ -28,6 +28,7 @@ end
 function draw_3d()
 	local celz0
 	local col
+	local deptharray = {}
 	
 	-- calculate view plane
 	
@@ -37,12 +38,16 @@ function draw_3d()
 	local y=pl.y
 	-- (player eye 1.5 units high)
 	local z=pl.z-1.5
+	local res = resolution-1
+	local ystart = viewheight-1
+	local ymid = viewcenter
 		
-	for sx=0,127,2 do
+	for sx=0,127,resolution do
+		local depthi = {}
 	
 		-- make all of these local
 		-- for speed
-		local sy=127
+		local sy = ystart
 	
 		local ix=flr(x)
 		local iy=flr(y)
@@ -116,28 +121,35 @@ function draw_3d()
 			-- screen space
 			
 			local sy1 = celz0-z
-			sy1 = (sy1 * 64)/tdist
-			sy1 = sy1 + 64 -- horizon 
+			sy1 = (sy1 * ymid)/tdist
+			sy1 = sy1 + horizon -- horizon 
 			
 			-- draw ground to new point
 			
 			if (sy1 < sy) then
 				
-				rectfill(sx,sy1-1,sx+1,sy,
+				rectfill(sx,sy1-1,sx+res,sy,
 					sget((celz0*2)%16,8))
-				line(sx,sy,sx+1,sy,5)
+				line(sx,sy,sx+res,sy,5)
 				if (wall_prev) then
 					line(sx,sy,sx+1,sy,0)
 					wall_prev=false
 				end	
 				if lower_elevation then
-					line(sx,sy,sx+1,sy,0)
+					line(sx,sy,sx+res,sy,0)
 					lower_elevation=false
 				end
 				sy=sy1
+				
 			end
 			-- flip()
-
+			
+			--lower floor?
+			if (celz>celz0) then
+				lower_elevation=true
+				lowcount = lowcount +1
+				add(depthi,{tdist,sy1})
+			end
 
 			-- draw wall if higher
 			
@@ -145,8 +157,8 @@ function draw_3d()
 				local sy1 = celz-z
 				
 				
-				sy1 = (sy1 * 64)/tdist
-				sy1 = sy1 + 64 -- horizon 
+				sy1 = (sy1 * ymid)/tdist
+				sy1 = sy1 + horizon -- horizon 
 				if (sy1 < sy) then
 					
 					local wcol = last_dir*-6+13
@@ -158,34 +170,34 @@ function draw_3d()
 						wcol=103+last_dir*102
 					end
 
-					rectfill(sx,sy1-1,sx+1,sy,
+					rectfill(sx,sy1-1,sx+res,sy,
 					 wcol)
-					line(sx,sy,sx+1,sy,0)
+					line(sx,sy,sx+res,sy,0)
 					--line(sx,sy1-1,sx+1,sy1-1,0)
 					 sy=sy1
 					
 					fillp()
 					wall_prev=true
+					add(depthi,{tdist,sy1})
 				end
 				-- flip()
 			end
-			--lower floor?
-			if (celz>celz0) then
-				lower_elevation=true
-				lowcount = lowcount +1
-			end
+			
 			
 		end   
+	
 		end -- skipping
+		deptharray[sx]=depthi	
 	end -- sx
+	return deptharray
 end
 
 
 function _draw()
 	cls()
 	-- to do: sky? stars?
-	rectfill(0,0,127,127,12)
-	draw_3d()
+	rectfill(0,0,127,viewheight-1,12)
+	deptharray = draw_3d()
 	
 	-- sort sprites
 	for aa in all(alist) do
@@ -195,12 +207,15 @@ function _draw()
 	sort(alist)
 	-- draw sprites
 	for aa in all(alist) do
-		aa:draw_simple(pl.x,pl.y,pl.z,pl.d)
+		-- aa:draw_simple(pl.x,pl.y,pl.z,pl.d)
+		-- aa:draw_dumb(pl.x,pl.y,pl.z,pl.d)
+		aa:draw_best(pl.x,pl.y,pl.z,pl.d)
 	end
 
 	cursor(0,0) color(7)
 	print("cpu:"..flr(stat(1)*100).."%",1,1)
-	print("pl :"..pl.d)
+	-- print("pl :"..pl.d)
+	print("pl:"..pl.x.." "..pl.y.." "..pl.z)
 	print("orb:"..orb.x.." "..orb.y.." "..orb.z)
 	print("lowcount: "..lowcount)
 

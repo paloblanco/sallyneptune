@@ -6,6 +6,10 @@ end
 -- field of view
 fov = 0.2 -- 0.2 = 72 degrees
 unit= abs(64/tan(fov*.5)) -- how big one block is
+horizon = 64
+resolution = 1
+viewheight = 128
+viewcenter = 64--viewheight/2
 
 -- true: to get wall patterns
 -- based on distance
