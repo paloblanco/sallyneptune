@@ -28,6 +28,7 @@ function actor:draw_prep(x,y,z,dir) -- needs view plane and player x,y,z,dir
     local dist = self.dist_cam
     local sx = (-rel_ang*2/fov)*64+64
     local sy = (dz*viewcenter/dist)+horizon
+    if (sy>127 or sy < 1) return
     --circfill(sx,sy,unit/dist,11)
     local hw = self.vwidth*unit/dist
     local sx0 = sx-.5*hw
@@ -96,13 +97,9 @@ function actor:draw_best(x,y,z,dir)
             local i = #slice
             while i >=1 do
                 if dist > slice[i][1] then
-                    if syblock > slice[i][2] then
-                        syblock = slice[i][2]
-                    end
-                    i = 0
-                else
-                    i = i-1
+                    syblock = min(syblock,slice[i][2])
                 end
+                i = i-1
             end
         end
         if syblock > sy0 then
