@@ -82,6 +82,7 @@ end
 function actor:draw_best(x,y,z,dir)
     -- draw sprite slice by slice according to geometry
     -- slowest option
+    pblock=true
     dist, sx0, sy0, hw = self:draw_prep(x,y,z,dir)
     if (dist == nil) return
     local sy1 = sy0+hw
@@ -89,23 +90,32 @@ function actor:draw_best(x,y,z,dir)
     --start checking
     for sxx=sx0,sx0+hw,resolution do
         local syblock=sy1
-        local slice = deptharray[sx0 - (sx0)%resolution]
-        local pxx=8*(sxx-sx0)/hw
+        local slice = deptharray[sxx - (sxx)%resolution]
+        local pxx=8*(sxx-sx0)\hw
         if slice != nil then
             local i = #slice
             while i >=1 do
                 if dist > slice[i][1] then
-                    syblock = slice[i][2]
-                    i = 1
+                    if syblock > slice[i][2] then
+                        syblock = slice[i][2]
+                    end
+                    i = 0
+                else
+                    i = i-1
                 end
-                i = i-1
             end
         end
         if syblock > sy0 then
             local pyy = 8*(syblock-sy0)/hw
-            sspr(self.sp%16 +pxx,8*(self.sp\16),8*resolution/hw,pyy,sxx,sy0,resolution,syblock-sy0)        
+            local spx = self.sp%16 +pxx
+            local spy = 8*(self.sp\16)
+            local pxx = 8*resolution/hw
+            pxx = max(pxx,1)
+            sspr(spx,spy,pxx,pyy,sxx,sy0,resolution,syblock-sy0)        
+        elseif pblock then
+            print(syblock)
+            pblock=false
         end
-
     end
     fillp()
 end

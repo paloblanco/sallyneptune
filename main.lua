@@ -214,7 +214,8 @@ function _draw()
 
 	cursor(0,0) color(7)
 	print("cpu:"..flr(stat(1)*100).."%",1,1)
-	print("pl :"..pl.d)
+	-- print("pl :"..pl.d)
+	print("pl:"..pl.x.." "..pl.y.." "..pl.z)
 	print("orb:"..orb.x.." "..orb.y.." "..orb.z)
 	print("lowcount: "..lowcount)
 
