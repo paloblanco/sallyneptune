@@ -4,11 +4,11 @@ function _init()
     alist = {}
     -- add(alist,pl)
 	-- map
-	for y=0,31 do
-		for x=0,31 do
-			mset(x,y,mget(x,y)*3)
-		end
-	end
+	-- for y=0,31 do
+	-- 	for x=0,31 do
+	-- 		mset(x,y,mget(x,y)*3)
+	-- 	end
+	-- end
 	orb = actor:new({x=12,y=12,z=16})
 	add(alist,orb)
 	orb2 = actor:new({x=10,y=11,z=16})
@@ -37,7 +37,7 @@ function draw_3d()
 	local x=pl.x
 	local y=pl.y
 	-- (player eye 1.5 units high)
-	local z=pl.z-1.5
+	local z=pl.z-1
 	local res = resolution-1
 	local ystart = viewheight-1
 	local ymid = viewcenter
@@ -53,7 +53,7 @@ function draw_3d()
 		local iy=flr(y)
 		local tdist=0
 		local col=mget(ix,iy)
-		local celz=16-col*0.125
+		local celz=16-col*1
 		
 		-- calc cast vector
 		local dist_x, dist_y,vx,vy
@@ -110,18 +110,19 @@ function draw_3d()
 			col=mget(ix,iy)
 			
 			--celz=mz(ix,iy) 
-			celz=16-col*0.125 -- inlined for speed
+			-- celz=16-col*0.125 -- inlined for speed
+			celz=16-col*1 -- inlined for speed
 			
--- print(ix.." "..iy.." "..col)
 			
-			if (col==72) then skip=false end
+			if (col==24) then skip=false end
 			
 			--discard close hits
 			if (tdist > 0.05) then
 			-- screen space
 			
 			local sy1 = celz0-z
-			sy1 = (sy1 * ymid)/tdist
+			-- sy1 = (sy1 * ymid)/tdist
+			sy1 = (sy1 * unit)/tdist
 			sy1 = sy1 + horizon -- horizon 
 			
 			-- draw ground to new point
@@ -157,7 +158,8 @@ function draw_3d()
 				local sy1 = celz-z
 				
 				
-				sy1 = (sy1 * ymid)/tdist
+				-- sy1 = (sy1 * ymid)/tdist
+				sy1 = (sy1 * unit)/tdist
 				sy1 = sy1 + horizon -- horizon 
 				if (sy1 < sy) then
 					

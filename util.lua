@@ -4,12 +4,20 @@ function tan(ang)
 end
 
 -- field of view
-fov = 0.2 -- 0.2 = 72 degrees
-unit= abs(64/tan(fov*.5)) -- how big one block is
+fov = 0.25 -- 0.2 = 72 degrees
+unit= abs(64/sin(fov*.5)) -- how big one block is
 horizon = 64
 resolution = 1
 viewheight = 128
 viewcenter = 64--viewheight/2
+
+--camera plane info
+xplane0 = cos(fov/2) 
+yplane0 = sin(fov/2)
+xplane1 = cos(-fov/2)
+yplane1 = sin(-fov/2)
+planelength = sqrt((xplane0-xplane1)^2 + (yplane0-yplane1)^2)
+shortestdist = cos(fov/2)
 
 -- true: to get wall patterns
 -- based on distance
@@ -27,7 +35,7 @@ patterns={
 
 -- map z
 function mz(x,y)
-	return 16-mget(x,y)*0.125
+	return 16-mget(x,y)*1
 end
 
 -- sort on dist_cam

@@ -4,6 +4,7 @@ actor.x=0
 actor.y=0
 actor.z=0
 actor.sp=48
+actor.spsize=8
 actor.vwidth=1
 actor.dist_cam = 0
 actor.ang_cam = 0
@@ -11,23 +12,29 @@ actor.ang_cam = 0
 function actor:get_cam_params(x,y,z,dir)
     local dx = self.x-x
     local dy = self.y-y
-    local dz = self.z-(z-1.5)
+    local dz = self.z-(z-1)
     local ang = atan2(dx,dy)
     local rel_ang = ang-dir -- angle of object off player angle
     if (rel_ang > .5) rel_ang = rel_ang-1
     if (rel_ang < -.5) rel_ang = 1+rel_ang
     self.ang_cam = rel_ang
     local dist = sqrt((dx)^2 + (dy)^2)
-    self.dist_cam = dist*cos(rel_ang)/cos(.1) -- not sure why you need .1 here but you do
+    self.dist_cam = dist*cos(rel_ang)/cos(fov/2) -- not sure why you need .1 here but you do
+    -- self.dist_cam = dist*cos(rel_ang) -- not sure why you need .1 here but you do
 end
 
 function actor:draw_prep(x,y,z,dir) -- needs view plane and player x,y,z,dir
-    local dz = self.z-(z-1.5)
+    -- vp = pl:return_view()
+
+    local dz = self.z-(z-1)
     local rel_ang = self.ang_cam
     if (abs(rel_ang) > fov/2) return -- escape function if not in fov
     local dist = self.dist_cam
-    local sx = (-rel_ang*2/fov)*64+64
-    local sy = (dz*viewcenter/dist)+horizon
+    local fix_ang = (shortestdist*tan(rel_ang))/planelength
+    -- local sx = (-rel_ang*2/fov)*64+64
+    local sx = (fix_ang)*128+64
+    -- local sy = (dz*viewcenter/dist)+horizon
+    local sy = (dz*unit/dist)+horizon
     if (sy>127 or sy < 1) return
     --circfill(sx,sy,unit/dist,11)
     local hw = self.vwidth*unit/dist
@@ -42,7 +49,7 @@ function actor:draw_simple(x,y,z,dir)
     dist, sx0, sy0, hw = self:draw_prep(x,y,z,dir)
     if (dist == nil) return
     fillp(patterns[min(flr(dist/3),8)])
-    sspr(self.sp%16,8*(self.sp\16),8,8,sx0,sy0,hw,hw)
+    sspr(self.sp%16,8*(self.sp\16),self.spsize,self.spsize,sx0,sy0,hw,hw)
     fillp()
 end
 
@@ -75,7 +82,7 @@ function actor:draw_dumb(x,y,z,dir)
         end
     end
     fillp(patterns[min(flr(dist/3),8)])
-    sspr(self.sp%16,8*(self.sp\16),8,8,sx0,sy0,hw,hw)
+    sspr(self.sp%16,8*(self.sp\16),self.spsize,self.spsize,sx0,sy0,hw,hw)
     fillp()
 
 end
@@ -92,7 +99,6 @@ function actor:draw_best(x,y,z,dir)
     for sxx=sx0,sx0+hw,resolution do
         local syblock=sy1
         local slice = deptharray[sxx - (sxx)%resolution]
-        local pxx=8*(sxx-sx0)\hw
         if slice != nil then
             local i = #slice
             while i >=1 do
@@ -103,10 +109,10 @@ function actor:draw_best(x,y,z,dir)
             end
         end
         if syblock > sy0 then
-            local pyy = 8*(syblock-sy0)/hw
-            local spx = self.sp%16 +pxx
+            local pyy = self.spsize*(syblock-sy0)/hw
+            local spx = self.sp%16 + self.spsize*(sxx-sx0)/hw
             local spy = 8*(self.sp\16)
-            local pxx = 8*resolution/hw
+            local pxx = self.spsize*resolution/hw
             pxx = max(pxx,1)
             sspr(spx,spy,pxx,pyy,sxx,sy0,resolution,syblock-sy0)        
         elseif pblock then
