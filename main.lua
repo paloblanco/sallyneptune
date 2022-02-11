@@ -128,10 +128,8 @@ function draw_3d()
 			-- draw ground to new point
 			
 			if (sy1 < sy) then
-				
-				rectfill(sx,sy1-1,sx+res,sy,
-					sget((celz0*2)%16,8))
-				line(sx,sy,sx+res,sy,5)
+				rectfill(sx,sy1-1,sx+res,sy,3) -- floor drawing
+				line(sx,sy,sx+res,sy,5) -- floor accent
 				if (wall_prev) then
 					line(sx,sy,sx+1,sy,0)
 					wall_prev=false
@@ -141,9 +139,7 @@ function draw_3d()
 					lower_elevation=false
 				end
 				sy=sy1
-				
 			end
-			-- flip()
 			
 			--lower floor?
 			if (celz>celz0) then
@@ -153,12 +149,8 @@ function draw_3d()
 			end
 
 			-- draw wall if higher
-			
 			if (celz < celz0) then
 				local sy1 = celz-z
-				
-				
-				-- sy1 = (sy1 * ymid)/tdist
 				sy1 = (sy1 * unit)/tdist
 				sy1 = sy1 + horizon -- horizon 
 				if (sy1 < sy) then
@@ -172,12 +164,9 @@ function draw_3d()
 						wcol=103+last_dir*102
 					end
 
-					rectfill(sx,sy1-1,sx+res,sy,
-					 wcol)
-					line(sx,sy,sx+res,sy,0)
-					--line(sx,sy1-1,sx+1,sy1-1,0)
-					 sy=sy1
-					
+					rectfill(sx,sy1-1,sx+res,sy,wcol) -- wall draw
+					line(sx,sy,sx+res,sy,0) -- accent
+					sy=sy1
 					fillp()
 					wall_prev=true
 					add(depthi,{tdist,sy1})
