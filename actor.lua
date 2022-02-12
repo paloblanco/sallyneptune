@@ -8,6 +8,7 @@ actor.spsize=8
 actor.vwidth=1
 actor.dist_cam = 0
 actor.ang_cam = 0
+actor.dist=100 -- start big so weird stuff doesnt happen
 
 function actor:get_cam_params(x,y,z,dir)
     local dx = self.x-x
@@ -18,8 +19,8 @@ function actor:get_cam_params(x,y,z,dir)
     if (rel_ang > .5) rel_ang = rel_ang-1
     if (rel_ang < -.5) rel_ang = 1+rel_ang
     self.ang_cam = rel_ang
-    local dist = sqrt((dx)^2 + (dy)^2)
-    self.dist_cam = dist*cos(rel_ang)/cos(fov/2) -- not sure why you need .1 here but you do
+    self.dist = sqrt((dx)^2 + (dy)^2)
+    
     -- self.dist_cam = dist*cos(rel_ang) -- not sure why you need .1 here but you do
 end
 
@@ -29,7 +30,7 @@ function actor:draw_prep(x,y,z,dir) -- needs view plane and player x,y,z,dir
     local dz = self.z-(z-1)
     local rel_ang = self.ang_cam
     if (abs(rel_ang) > fov/2) return -- escape function if not in fov
-    local dist = self.dist_cam
+    local dist = self.dist*cos(rel_ang)/cos(fov/2) -- not sure why you need .1 here but you do
     local fix_ang = (shortestdist*tan(rel_ang))/planelength
     -- local sx = (-rel_ang*2/fov)*64+64
     local sx = (fix_ang)*128+64
@@ -90,7 +91,6 @@ end
 function actor:draw_best(x,y,z,dir)
     -- draw sprite slice by slice according to geometry
     -- slowest option
-    pblock=true
     dist, sx0, sy0, hw = self:draw_prep(x,y,z,dir)
     if (dist == nil) return
     local sy1 = sy0+hw
@@ -115,9 +115,6 @@ function actor:draw_best(x,y,z,dir)
             local pxx = self.spsize*resolution/hw
             pxx = max(pxx,1)
             sspr(spx,spy,pxx,pyy,sxx,sy0,resolution,syblock-sy0)        
-        elseif pblock then
-            print(syblock)
-            pblock=false
         end
     end
     fillp()

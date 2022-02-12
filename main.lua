@@ -108,16 +108,13 @@ function draw_3d()
 			
 			-- new cel properties
 			col=mget(ix,iy)
-			
-			--celz=mz(ix,iy) 
-			-- celz=16-col*0.125 -- inlined for speed
 			celz=16-col*1 -- inlined for speed
 			
 			
 			if (col==24) then skip=false end
 			
 			--discard close hits
-			if (tdist > 0.05) then
+			if (tdist > 0.005) then
 			-- screen space
 			
 			local sy1 = celz0-z
@@ -154,16 +151,8 @@ function draw_3d()
 				sy1 = (sy1 * unit)/tdist
 				sy1 = sy1 + horizon -- horizon 
 				if (sy1 < sy) then
-					
-					local wcol = last_dir*-6+13
-					if (not skip) then
-						wcol = last_dir+5
-					end
-					if (patterns) then
-						fillp(patterns[min(flr(tdist/3),8)])
-						wcol=103+last_dir*102
-					end
-
+					fillp(patterns[min(flr(tdist/3),8)])
+					local wcol=7 + (last_dir)*6
 					rectfill(sx,sy1-1,sx+res,sy,wcol) -- wall draw
 					line(sx,sy,sx+res,sy,0) -- accent
 					sy=sy1
