@@ -1,17 +1,14 @@
 function _init()
+	-- setup stuff
+	setup_asciitables()
+
 	-- create player
 	pl = player:new()
     alist = {}
-    -- add(alist,pl)
-	-- map
-	for y=0,31 do
-		for x=0,31 do
-			mset(x,y,mget(x,y)*3)
-		end
-	end
-	orb = actor:new({x=12,y=12,z=16})
+
+	orb = actor:new({x=6,y=6,z=16})
 	add(alist,orb)
-	orb2 = actor:new({x=10,y=11,z=16})
+	orb2 = actor:new({x=7,y=6,z=16})
 	add(alist,orb2)
 end
 
@@ -37,7 +34,7 @@ function draw_3d()
 	local x=pl.x
 	local y=pl.y
 	-- (player eye 1.5 units high)
-	local z=pl.z-1.5
+	local z=pl.z-1
 	local res = resolution-1
 	local ystart = viewheight-1
 	local ymid = viewcenter
@@ -53,7 +50,7 @@ function draw_3d()
 		local iy=flr(y)
 		local tdist=0
 		local col=mget(ix,iy)
-		local celz=16-col*0.125
+		local celz=16-col*1
 		
 		-- calc cast vector
 		local dist_x, dist_y,vx,vy
@@ -108,29 +105,25 @@ function draw_3d()
 			
 			-- new cel properties
 			col=mget(ix,iy)
+			celz=16-col*1 -- inlined for speed
 			
-			--celz=mz(ix,iy) 
-			celz=16-col*0.125 -- inlined for speed
 			
--- print(ix.." "..iy.." "..col)
-			
-			if (col==72) then skip=false end
+			if (col==15) then skip=false end
 			
 			--discard close hits
-			if (tdist > 0.05) then
+			if (tdist > 0.005) then
 			-- screen space
 			
 			local sy1 = celz0-z
-			sy1 = (sy1 * ymid)/tdist
+			-- sy1 = (sy1 * ymid)/tdist
+			sy1 = (sy1 * unit)/tdist
 			sy1 = sy1 + horizon -- horizon 
 			
 			-- draw ground to new point
 			
 			if (sy1 < sy) then
-				
-				rectfill(sx,sy1-1,sx+res,sy,
-					sget((celz0*2)%16,8))
-				line(sx,sy,sx+res,sy,5)
+				rectfill(sx,sy1-1,sx+res,sy,3) -- floor drawing
+				line(sx,sy,sx+res,sy,5) -- floor accent
 				if (wall_prev) then
 					line(sx,sy,sx+1,sy,0)
 					wall_prev=false
@@ -140,9 +133,7 @@ function draw_3d()
 					lower_elevation=false
 				end
 				sy=sy1
-				
 			end
-			-- flip()
 			
 			--lower floor?
 			if (celz>celz0) then
@@ -152,30 +143,16 @@ function draw_3d()
 			end
 
 			-- draw wall if higher
-			
 			if (celz < celz0) then
 				local sy1 = celz-z
-				
-				
-				sy1 = (sy1 * ymid)/tdist
+				sy1 = (sy1 * unit)/tdist
 				sy1 = sy1 + horizon -- horizon 
 				if (sy1 < sy) then
-					
-					local wcol = last_dir*-6+13
-					if (not skip) then
-						wcol = last_dir+5
-					end
-					if (patterns) then
-						fillp(patterns[min(flr(tdist/3),8)])
-						wcol=103+last_dir*102
-					end
-
-					rectfill(sx,sy1-1,sx+res,sy,
-					 wcol)
-					line(sx,sy,sx+res,sy,0)
-					--line(sx,sy1-1,sx+1,sy1-1,0)
-					 sy=sy1
-					
+					fillp(patterns[min(flr(tdist/3),8)])
+					local wcol=7 + (last_dir)*6
+					rectfill(sx,sy1-1,sx+res,sy,wcol) -- wall draw
+					line(sx,sy,sx+res,sy,0) -- accent
+					sy=sy1
 					fillp()
 					wall_prev=true
 					add(depthi,{tdist,sy1})
