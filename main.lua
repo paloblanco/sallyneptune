@@ -1,17 +1,14 @@
 function _init()
+	-- setup stuff
+	setup_asciitables()
+
 	-- create player
 	pl = player:new()
     alist = {}
-    -- add(alist,pl)
-	-- map
-	-- for y=0,31 do
-	-- 	for x=0,31 do
-	-- 		mset(x,y,mget(x,y)*3)
-	-- 	end
-	-- end
-	orb = actor:new({x=12,y=12,z=16})
+
+	orb = actor:new({x=6,y=6,z=16})
 	add(alist,orb)
-	orb2 = actor:new({x=10,y=11,z=16})
+	orb2 = actor:new({x=7,y=6,z=16})
 	add(alist,orb2)
 end
 
@@ -111,7 +108,7 @@ function draw_3d()
 			celz=16-col*1 -- inlined for speed
 			
 			
-			if (col==24) then skip=false end
+			if (col==15) then skip=false end
 			
 			--discard close hits
 			if (tdist > 0.005) then
