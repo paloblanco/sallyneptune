@@ -50,6 +50,10 @@ function draw_3d()
 		local iy=flr(y)
 		local tdist=0
 		local col=mget(ix,iy)
+		local tiletype = tileinfo[col\16]
+		local spr_ix = tiletype[1]
+		local g_color =  tiletype[2]
+		col = col%16
 		local celz=16-col*1
 		
 		-- calc cast vector
@@ -102,9 +106,17 @@ function draw_3d()
 			-- prev cel properties
 			col0=col
 			celz0=celz
+			local g_color0 = g_color
 			
 			-- new cel properties
 			col=mget(ix,iy)
+			tiletype = tileinfo[col\16]
+			spr_ix = tiletype[1]
+			spr_x_coord = (spr_ix%16)*8
+			spr_y_coord = (spr_ix\16)*8
+			g_color =  tiletype[2]
+			col = col%16
+
 			celz=16-col*1 -- inlined for speed
 			
 			
@@ -122,7 +134,7 @@ function draw_3d()
 			-- draw ground to new point
 			
 			if (sy1 < sy) then
-				rectfill(sx,sy1-1,sx+res,sy,3) -- floor drawing
+				rectfill(sx,sy1-1,sx+res,sy,g_color0) -- floor drawing
 				line(sx,sy,sx+res,sy,5) -- floor accent
 				if (wall_prev) then
 					line(sx,sy,sx+1,sy,0)
@@ -163,9 +175,11 @@ function draw_3d()
 					local yf = sy1
 					while yf+1 < sy do
 						local ystep = yscale
-						if (sy < 127) ystep = min(yscale,sy-yf)
-						local dyspr = .5+8*ystep/yscale
-						sspr(64+pixx,32,1,dyspr,sx,yf,1,ystep+1)
+						if yf+ystep > -1 then
+							if (sy < 127) ystep = min(yscale,sy-yf)
+							local dyspr = .5+8*ystep/yscale --  add .5 to improve tex tearing
+							sspr(spr_x_coord+pixx,spr_y_coord,1,dyspr,sx,yf,1,ystep+1)
+						end
 						yf = yf+yscale
 					end
 					line(sx,sy,sx+res,sy,0) -- accent
@@ -189,9 +203,9 @@ end
 
 
 function _draw()
-	cls()
+	-- cls()
 	-- to do: sky? stars?
-	rectfill(0,0,127,viewheight-1,12)
+	rectfill(0,0,127,viewheight-1,13)
 	deptharray = draw_3d()
 	
 	-- sort sprites

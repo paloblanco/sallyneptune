@@ -33,9 +33,22 @@ patterns={
 0b1010010100100101.011,
 0b1010010110100101.011}
 
+-- tile info - yvalues are keys
+tileinfo={}
+tileinfo[0] = {70,6} -- square block
+tileinfo[1] = {71,5} -- brick
+tileinfo[2] = {136,3} -- brick
+tileinfo[3] = {85,11} -- brick
+tileinfo[4] = {84,1} -- brick
+tileinfo[5] = {80,10} -- emergency
+tileinfo[6] = {96,5}
+tileinfo[7] = {83,7}
+
+
+
 -- map z
 function mz(x,y)
-	return 16-mget(x,y)*1
+	return 16-mget(x,y)*1%16
 end
 
 -- sort on dist
