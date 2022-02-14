@@ -164,7 +164,7 @@ function draw_3d()
 					while yf+1 < sy do
 						local ystep = yscale
 						if (sy < 127) ystep = min(yscale,sy-yf)
-						local dyspr = flr(8*ystep/yscale)
+						local dyspr = .5+8*ystep/yscale
 						sspr(64+pixx,32,1,dyspr,sx,yf,1,ystep+1)
 						yf = yf+yscale
 					end
