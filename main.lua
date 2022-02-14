@@ -144,18 +144,36 @@ function draw_3d()
 
 			-- draw wall if higher
 			if (celz < celz0) then
+				-- local wallx
+				if last_dir == 0 then
+					wallx = (y + tdist*vy)%1
+				else
+					wallx = (x + tdist*vx)%1
+				end
+				local pixx = flr(wallx*8)
 				local sy1 = celz-z
-				sy1 = (sy1 * unit)/tdist
+				local yscale = unit/tdist
+				sy1 = sy1 * yscale
 				sy1 = sy1 + horizon -- horizon 
 				if (sy1 < sy) then
+					palt(0,false)
 					fillp(patterns[min(flr(tdist/3),8)])
 					local wcol=7 + (last_dir)*6
-					rectfill(sx,sy1-1,sx+res,sy,wcol) -- wall draw
+					-- rectfill(sx,sy1-1,sx+res,sy,wcol) -- wall draw
+					local yf = sy1
+					while yf+1 < sy do
+						local ystep = yscale
+						if (sy < 127) ystep = min(yscale,sy-yf)
+						local dyspr = flr(8*ystep/yscale)
+						sspr(64+pixx,32,1,dyspr,sx,yf,1,ystep+1)
+						yf = yf+yscale
+					end
 					line(sx,sy,sx+res,sy,0) -- accent
 					sy=sy1
 					fillp()
 					wall_prev=true
 					add(depthi,{tdist,sy1})
+					palt()
 				end
 				-- flip()
 			end
