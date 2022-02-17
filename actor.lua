@@ -3,12 +3,31 @@ actor = thing:new()
 actor.x=0
 actor.y=0
 actor.z=0
-actor.sp=48
+actor.loc = flr(256*actor.y) + flr(actor.x)
+actor.loc0= actor.loc
+actor.xf = flr(actor.x)
+actor.yf = flr(actor.y)
+actor.x0 = actor.xf
+actor.y0 = actor.yf
+actor.dx, actor.dy, actor.dz = 0,0,0
+actor.sp=79
 actor.spsize=8
 actor.vwidth=1
 actor.dist_cam = 0
 actor.ang_cam = 0
 actor.dist=100 -- start big so weird stuff doesnt happen
+actor.d=0
+actor.jetpack=false
+
+
+function actor:move()
+    local q = self.z - 0.6
+	if (mz(self.x+self.dx,self.y) > q)
+	then self.x += self.dx end
+	if (mz(self.x,self.y+self.dy) > q)
+	then self.y += self.dy end
+end
+
 
 function actor:get_cam_params(x,y,z,dir)
     local dx = self.x-x
@@ -50,7 +69,7 @@ function actor:draw_simple(x,y,z,dir)
     dist, sx0, sy0, hw = self:draw_prep(x,y,z,dir)
     if (dist == nil) return
     fillp(patterns[min(flr(dist/3),8)])
-    sspr(self.sp%16,8*(self.sp\16),self.spsize,self.spsize,sx0,sy0,hw,hw)
+    sspr(8*(self.sp%16),8*(self.sp\16),self.spsize,self.spsize,sx0,sy0,hw,hw)
     fillp()
 end
 
@@ -83,7 +102,7 @@ function actor:draw_dumb(x,y,z,dir)
         end
     end
     fillp(patterns[min(flr(dist/3),8)])
-    sspr(self.sp%16,8*(self.sp\16),self.spsize,self.spsize,sx0,sy0,hw,hw)
+    sspr(8*(self.sp%16),8*(self.sp\16),self.spsize,self.spsize,sx0,sy0,hw,hw)
     fillp()
 
 end
@@ -110,7 +129,7 @@ function actor:draw_best(x,y,z,dir)
         end
         if syblock > sy0 then
             local pyy = self.spsize*(syblock-sy0)/hw
-            local spx = self.sp%16 + self.spsize*(sxx-sx0)/hw
+            local spx = 8*(self.sp%16) + self.spsize*(sxx-sx0)/hw
             local spy = 8*(self.sp\16)
             local pxx = self.spsize*resolution/hw
             pxx = max(pxx,1)
@@ -118,4 +137,94 @@ function actor:draw_best(x,y,z,dir)
         end
     end
     fillp()
+end
+
+function actor:draw()
+    self:draw_best(pl.x,pl.y,pl.z,pl.d)
+end
+
+neato = actor:new()
+neato.sp = 96
+neato.spsize = 16
+neato.timer=0
+
+neatosp0=96
+neatosp={98,100,102,104}
+
+function neato:draw()
+    self:draw_simple(pl.x,pl.y,pl.z,pl.d)
+end
+
+function neato:update()
+    local dx=0
+	local dy=0
+
+	if (btn(❎)) then
+		-- strafe
+		if (btn(⬅️)) dx-=1
+		if (btn(➡️)) dx+=1
+	else
+		-- turn
+		if (btn(⬅️)) self.d+=0.02
+		if (btn(➡️)) self.d-=0.02
+	end
+    self.d = self.d%1
+	
+	-- forwards / backwards
+	if (btn(⬆️)) dy+= 1
+	if (btn(⬇️)) dy-= 1
+	
+	spd = sqrt(dx*dx+dy*dy)
+	if (spd) then
+	
+		spd = 0.1 / spd
+		dx *= spd
+		dy *= spd
+		
+		self.dx += cos(self.d-0.25) * dx
+		self.dy += sin(self.d-0.25) * dx
+		self.dx += cos(self.d+0.00) * dy
+		self.dy += sin(self.d+0.00) * dy
+	
+    end
+
+    if dx!=0 or dy!=0 then
+        self.timer = self.timer+1
+    else
+        self.timer=0
+    end
+
+    if self.timer==0 then
+        self.sp = neatosp0
+    else
+        self.sp = neatosp[1+(self.timer\3)%4]
+    end
+	
+	local q = self.z - 0.6
+	if (mz(self.x+self.dx,self.y) > q)
+	then self.x += self.dx end
+	if (mz(self.x,self.y+self.dy) > q)
+	then self.y += self.dy end
+	
+	-- friction
+	self.dx *= 0.6
+	self.dy *= 0.6
+	
+	-- z means player feet
+	if (self.z >= mz(self.x,self.y) and self.dz >=0) then
+		self.z = mz(self.x,self.y)
+		self.dz = 0
+	else
+		self.dz=self.dz+0.01
+		self.z =self.z + self.dz
+	end
+
+	-- jetpack / jump when standing
+	if (btn(4)) then 
+		if (self.jetpack or 
+					 mz(self.x,self.y) < self.z+0.1)
+		then
+			self.dz=-0.15
+		end
+	end
 end

@@ -10,15 +10,20 @@ function _init()
 	add(alist,orb)
 	orb2 = actor:new({x=7,y=6,z=16})
 	add(alist,orb2)
+
+	cpt = neato:new({x=6,y=4,z=12})
+	add(alist,cpt)
+	pl:update(cpt)
 end
 
 
 function _update()
 	
-	pl:update()
+	
     for aa in all(alist) do
         aa:update()
     end
+	pl:update(cpt)
 
 end
 
@@ -218,7 +223,8 @@ function _draw()
 	for aa in all(alist) do
 		-- aa:draw_simple(pl.x,pl.y,pl.z,pl.d)
 		-- aa:draw_dumb(pl.x,pl.y,pl.z,pl.d)
-		aa:draw_best(pl.x,pl.y,pl.z,pl.d)
+		-- aa:draw_best(pl.x,pl.y,pl.z,pl.d)
+		aa:draw()
 	end
 
 	cursor(0,0) color(7)
