@@ -7,7 +7,7 @@ end
 fov = 0.25 -- 0.2 = 72 degrees
 unit= abs(64/sin(fov*.5)) -- how big one block is
 horizon = 64
-resolution = 1
+resolution = 2
 viewheight = 128
 viewcenter = 64--viewheight/2
 

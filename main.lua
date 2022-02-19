@@ -183,7 +183,7 @@ function draw_3d()
 						if yf+ystep > -1 then
 							if (sy < 127) ystep = min(yscale,sy-yf)
 							local dyspr = .5+8*ystep/yscale --  add .5 to improve tex tearing
-							sspr(spr_x_coord+pixx,spr_y_coord,1,dyspr,sx,yf,1,ystep+1)
+							sspr(spr_x_coord+pixx,spr_y_coord,1,dyspr,sx,yf,resolution,ystep+1)
 						end
 						yf = yf+yscale
 					end

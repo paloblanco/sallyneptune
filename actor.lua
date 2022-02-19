@@ -152,7 +152,7 @@ neatosp0=96
 neatosp={98,100,102,104}
 
 function neato:draw()
-    self:draw_simple(pl.x,pl.y,pl.z,pl.d)
+    self:draw_best(pl.x,pl.y,pl.z,pl.d)
 end
 
 function neato:update()
