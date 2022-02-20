@@ -227,11 +227,12 @@ function _draw()
 		aa:draw()
 	end
 
-	cursor(0,0) color(7)
+	cursor(0,0) color(0)
 	print("cpu:"..flr(stat(1)*100).."%",1,1)
 	-- print("pl :"..pl.d)
-	print("pl:"..pl.x.." "..pl.y.." "..pl.z)
-	print("orb:"..orb.x.." "..orb.y.." "..orb.z)
-	print("lowcount: "..lowcount)
+	-- print("pl:"..pl.x.." "..pl.y.." "..pl.z)
+	
+	print("alist: "..#alist)
+	print("cptz: "..cpt.z)
 
 end

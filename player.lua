@@ -12,7 +12,7 @@ player.camd = 2
 function player:update(target)
 	self.x = target.x
 	self.y = target.y
-	self.z = target.z - .5
+	self.z = target.z - 1
 	self.d = target.d
 
 	local xoff = -cos(self.d)*self.camd

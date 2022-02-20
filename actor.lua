@@ -9,6 +9,7 @@ actor.xf = flr(actor.x)
 actor.yf = flr(actor.y)
 actor.x0 = actor.xf
 actor.y0 = actor.yf
+actor.z0 = actor.zf
 actor.dx, actor.dy, actor.dz = 0,0,0
 actor.sp=79
 actor.spsize=8
@@ -17,7 +18,9 @@ actor.dist_cam = 0
 actor.ang_cam = 0
 actor.dist=100 -- start big so weird stuff doesnt happen
 actor.d=0
+actor.timer=0
 actor.jetpack=false
+actor.killme=false
 
 
 function actor:move()
@@ -168,6 +171,11 @@ function neato:update()
 		if (btn(⬅️)) self.d+=0.02
 		if (btn(➡️)) self.d-=0.02
 	end
+
+    if btnp(5) then
+        make_laser()
+    end
+
     self.d = self.d%1
 	
 	-- forwards / backwards
@@ -227,4 +235,95 @@ function neato:update()
 			self.dz=-0.15
 		end
 	end
+end
+
+laser = actor:new()
+colors = {8,9,10,11,12,13,6}
+
+function laser:init()
+    self.color = colors[1+flr(#colors*rnd())]
+    self.x = cpt.x
+    self.y = cpt.y
+    self.z = cpt.z-.5
+    self.x0,self.y0,self.z0=self.x,self.y,self.z
+    self.s=.9
+    self.d = cpt.d
+    self.dx = self.s * cos(self.d)
+    self.dy = self.s * sin(self.d)
+end
+
+function laser:update()
+    if self.killme then
+        self:kill_me()
+        return
+    end
+    
+    self.x0,self.y0,self.z0=self.x,self.y,self.z
+    self.x = self.x + self.dx
+    self.y = self.y + self.dy
+
+    if (mz(self.x,self.y) < self.z) self.killme = true
+
+    self.timer = self.timer + 1
+    if (self.timer > 60) self.killme = true
+end
+
+function laser:draw()
+    sx0,sy0,h0 = point2pix(self.x0,self.y0,self.z0,pl)
+    sx,sy,h = point2pix(self.x,self.y,self.z,pl)
+
+    if sx and sx0 then
+        line(sx0,sy0,sx,sy,self.color)
+    end
+end
+
+function laser:kill_me()
+    -- self:draw()
+    make_explosion(self.x,self.y,self.z,self.color)
+    del(alist,self)
+end
+
+function make_laser()
+    local ll = laser:new()
+    add(alist,ll)
+end
+
+explosion = actor:new()
+explosion.color = 8
+explosion.timer = 8
+explosion.sp = 108
+spr_explosion = {108, 109, 110, 111}
+explosion.timer = 9
+
+function make_explosion(x,y,z,col)
+    local ee = explosion:new({x=x,y=y,z=z,color=col})
+    add(alist,ee)
+end
+
+function explosion:update()
+    self.timer += -1
+
+    local ixspr = 5-max(flr((self.timer/9)*4),1)
+    if (self.timer < 0)  then
+        self:kill_me()
+        return
+    end
+    self.sp = spr_explosion[ixspr]
+end
+
+function explosion:kill_me()
+    del(alist,self)
+end
+
+function explosion:draw()
+    local sx,sy,h = point2pix(self.x,self.y,self.z,pl)
+    pal(9,self.color)
+    pal(10,self.color)
+    if sx then
+        sspr(8*(self.sp%16),8*(self.sp\16),self.spsize,self.spsize,sx-h+1,sy-h+1,h,h)
+        sspr(8*(self.sp%16),8*(self.sp\16),self.spsize,self.spsize,sx,sy-h+1,h,h,true)
+        sspr(8*(self.sp%16),8*(self.sp\16),self.spsize,self.spsize,sx-h+1,sy,h,h,false,true)
+        sspr(8*(self.sp%16),8*(self.sp\16),self.spsize,self.spsize,sx,sy,h,h,true,true)
+    end
+    pal()
 end

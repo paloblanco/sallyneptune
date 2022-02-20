@@ -6,7 +6,7 @@ end
 -- field of view
 fov = 0.25 -- 0.2 = 72 degrees
 unit= abs(64/sin(fov*.5)) -- how big one block is
-horizon = 64
+horizon = 48
 resolution = 2
 viewheight = 128
 viewcenter = 64--viewheight/2
@@ -60,6 +60,30 @@ function sort(a)
             j = j - 1
         end
     end
+end
+
+-- point2pix
+function point2pix(x,y,z,cam) -- cam is pl object in this game
+    local dx = x-cam.x
+    local dy = y-cam.y
+    local dz = z-(cam.z-1)
+    
+    local ang = atan2(dx,dy)
+    local rel_ang = ang-cam.d -- angle of object off player angle
+    if (rel_ang > .5) rel_ang = rel_ang-1
+    if (rel_ang < -.5) rel_ang = 1+rel_ang
+    if (abs(rel_ang) > fov/2) return -- escape function if not in fov
+    
+    local dist = sqrt((dx)^2 + (dy)^2)
+    dist = dist*cos(rel_ang)/cos(fov/2) -- not sure why you need .1 here but you do
+    rel_ang = (shortestdist*tan(rel_ang))/planelength
+
+    local sx = (rel_ang)*128+64
+    local sy = (dz*unit/dist)+horizon
+    if (sy>127 or sy < 1) return
+    local scale = unit/dist
+
+    return sx,sy,scale
 end
 
 -- tbj utility stuff
