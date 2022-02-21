@@ -5,6 +5,7 @@ actor.y=0
 actor.z=0
 actor.sx=0
 actor.sy=0
+actor.hw=0
 actor.loc = flr(256*actor.y) + flr(actor.x)
 actor.loc0= actor.loc
 actor.xf = flr(actor.x)
@@ -18,12 +19,17 @@ actor.spsize=8
 actor.vwidth=1
 actor.dist_cam = 0
 actor.ang_cam = 0
+actor.my_ang = 0
 actor.dist=100 -- start big so weird stuff doesnt happen
 actor.d=0
 actor.timer=0
 actor.jetpack=false
 actor.killme=false
 actor.ground=true
+actor.health=5
+actor.maxhealth=5
+actor.hurt=false
+actor.mainc=1
 
 function actor:check_lock()
     if abs(self.ang_cam) <= .02 and self.dist > 2 then
@@ -33,6 +39,19 @@ function actor:check_lock()
     end
 end
 
+function actor:kill_me()
+    del(alist,self)
+    del(locklist,self)
+    self.killme=true
+end
+
+function actor:hurt_me()
+    self.health += -1
+    self.hurt=true
+    if self.health <= 0 then
+        self:kill_me()
+    end
+end
 
 function actor:move()
     local q = self.z - 0.6
@@ -48,6 +67,7 @@ function actor:get_cam_params(x,y,z,dir)
     local dy = self.y-y
     local dz = self.z-(z-1)
     local ang = atan2(dx,dy)
+    self.my_ang = ang
     local rel_ang = ang-dir -- angle of object off player angle
     if (rel_ang > .5) rel_ang = rel_ang-1
     if (rel_ang < -.5) rel_ang = 1+rel_ang
@@ -76,6 +96,7 @@ function actor:draw_prep(x,y,z,dir) -- needs view plane and player x,y,z,dir
     local sy0 = sy-hw
     self.sx=sx
     self.sy=sy-.5*hw
+    self.hw=hw
     return dist, sx0, sy0, hw
 end
 
@@ -126,6 +147,7 @@ end
 function actor:draw_best(x,y,z,dir)
     -- draw sprite slice by slice according to geometry
     -- slowest option
+    if (self.hurt) pal(mainc,7)
     dist, sx0, sy0, hw = self:draw_prep(x,y,z,dir)
     if (dist == nil) return
     local sy1 = sy0+hw
@@ -153,6 +175,8 @@ function actor:draw_best(x,y,z,dir)
         end
     end
     fillp()
+    pal()
+    self.hurt = false
 end
 
 function actor:draw()
@@ -164,6 +188,9 @@ neato.sp = 96
 neato.spsize = 16
 neato.timer=0
 neato.mylock = nil
+neato.target = nil
+neato.shottimemax = 10
+neato.shottime = 0
 
 neatosp0=96
 neatosp={98,100,102,104}
@@ -186,20 +213,40 @@ end
 function neato:update()
     local dx=0
 	local dy=0
+    self.target = nil
 
 	if (btn(❎)) then
+        if mylock and not self.mylock then
+            self.mylock = mylock
+        end
+        if self.mylock then
+            if self.mylock.killme then
+                self.mylock=nil
+            else
+                self.d = self.mylock.my_ang
+                self.target = self.mylock
+            end
+        end
+
 		-- strafe
 		if (btn(⬅️)) dx-=1
 		if (btn(➡️)) dx+=1
+
+        -- shoot
+        if self.shottime <= 0 then
+            make_laser()
+            self.shottime = self.shottimemax
+        end
 	else
 		-- turn
 		if (btn(⬅️)) self.d+=0.02
 		if (btn(➡️)) self.d-=0.02
+        self.mylock = nil
 	end
 
-    if btnp(5) then
-        make_laser()
-    end
+    -- if btnp(5) then
+        
+    -- end
 
     self.d = self.d%1
 	
@@ -261,10 +308,12 @@ function neato:update()
 			self.dz=-0.15
 		end
 	end
+    self.shottime += -1
 end
 
 laser = actor:new()
 colors = {8,9,10,11,12,13,6}
+laser.targs={}
 
 function laser:init()
     self.color = colors[1+flr(#colors*rnd())]
@@ -276,6 +325,9 @@ function laser:init()
     self.d = cpt.d
     self.dx = self.s * cos(self.d)
     self.dy = self.s * sin(self.d)
+    for i in all(locklistold) do
+        add(self.targs,i)
+    end
 end
 
 function laser:update()
@@ -292,6 +344,18 @@ function laser:update()
 
     self.timer = self.timer + 1
     if (self.timer > 60) self.killme = true
+
+    local i = #self.targs
+    while i>0 do
+        newtarg = self.targs[i]
+        if abs(self.x+self.dx-newtarg.x) < .5 then
+            if abs(self.y+self.dy-newtarg.y) < .5 then
+                self.killme=true
+                newtarg:hurt_me()
+            end
+        end
+        i += -1
+    end
 end
 
 function laser:draw()
@@ -360,6 +424,9 @@ myrtle.sp=77
 myrtle.speed = 0.075
 myrtle.ground = true
 myrtle.timer = 0
+myrtle.health = 5
+myrtle.maxhealth = 5
+myrtle.mainc=8
 
 function myrtle:update()
     local cptdist = sqrt((self.x-cpt.x)^2 + (self.y-cpt.y)^2)
@@ -395,4 +462,10 @@ end
 
 function myrtle:draw()
     self:draw_best(pl.x,pl.y,pl.z,pl.d)
+    
+    local len = 10*self.health/self.maxhealth
+    if len < 10 then
+        rectfill(self.sx-6,self.sy-self.hw-1,self.sx+6,self.sy-self.hw+1,0)
+        rectfill(self.sx-5,self.sy-self.hw,self.sx-5+len,self.sy-self.hw,8)
+    end
 end

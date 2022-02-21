@@ -8,11 +8,14 @@ function _init()
 
 	m1 = myrtle:new({x=9,y=4,z=12})
 	add(alist,m1)
+	m2 = myrtle:new({x=9,y=6,z=12})
+	add(alist,m2)
 
 	cpt = neato:new({x=6,y=4,z=12})
 	add(alist,cpt)
 	pl:update(cpt)
 
+	locklistold = {}
 	locklist={} -- who is in your sights
 	mylock = nil
 
@@ -22,13 +25,12 @@ end
 
 function _update()
 	
+	locklistold = locklist
 	locklist={}
     for aa in all(alist) do
         aa:update()
     end
 	pl:update(cpt)
-
-
 
 	if #locklist > 0 then
 		sort(locklist)
@@ -244,6 +246,9 @@ function _draw()
 	if (mylock) then
 		circ(mylock.sx,mylock.sy,10,9)
 		-- circ()
+	end
+	if cpt.target then
+		circ(cpt.target.sx,cpt.target.sy,11,8)
 	end
 
 
