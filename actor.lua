@@ -659,3 +659,94 @@ function key:update()
 		self.ground = false
 	end
 end
+
+blue = myrtle:new()
+blue.sp=127
+blue.mainc=12
+blue.maxhealth=7
+blue.health=7
+
+function blue:init()
+    self.timer = flr(rnd(60))
+end
+
+function blue:update()
+    -- z means player feet
+	if (self.z >= mz(self.x,self.y) and self.dz >=0) then
+		self.z = mz(self.x,self.y)
+		self.dz = 0
+        self.ground = true
+	else
+		self.dz=self.dz+0.01
+		self.z =self.z + self.dz
+        self.ground = false
+	end
+
+	-- jetpack / jump when standing
+	if self.ground then 
+        self.dz=-0.05
+		self.ground = false
+	end
+
+    --lock on me
+    self:check_lock()
+    self:process_offtime()
+
+    -- shoot
+    if self.timer%60 == 0 then
+        make_bullet(self.x,self.y,self.z)
+    end
+
+    self.timer += 1
+end
+
+bullet = actor:new()
+bullet.sp=125
+bullet.dx=0
+bullet.dy=0
+bullet.dz=0
+bullet.speed=.5
+
+function make_bullet(x,y,z)
+    local dx = cpt.x-x
+    local dy = cpt.y-y
+    local dz = cpt.z-z
+    local b = bullet:new({x=x,y=y,z=z-.5,dx=dx,dy=dy,dz=dz})
+    add(alist,b)
+end
+
+function bullet:init()
+    local mag = sqrt(self.dx*self.dx + self.dy*self.dy)
+    self.dx = (self.dx/mag)*self.speed
+    self.dy = (self.dy/mag)*self.speed
+    self.dz = (self.dz/mag)*self.speed
+    sfx(37)
+end
+
+function bullet:update()
+    
+    self.z += self.dz
+    local q = self.z - 0.6
+
+	if (mz(self.x+self.dx,self.y) > q) then 
+        self.x += self.dx 
+    else
+        self:kill_me()
+        sfx(48)
+    end
+	if (mz(self.x,self.y + self.dy) > q) then 
+        self.y += self.dy 
+    else
+        self:kill_me()
+        sfx(48)
+    end
+    self.timer +=1
+    if (self.timer>90) self:kill_me()
+end
+
+function bullet:bump_me(other)
+    other:hurt_me(5)
+    sfx(55)
+    self:kill_me()
+end
+

@@ -40,6 +40,7 @@ function fix_map()
 	actor_tiles[142] = goal
 	actor_tiles[161] = neato
 	actor_tiles[139] = key
+	actor_tiles[191] = blue
 
 	for xx=0,15,1 do
 		for yy=1,15,1 do
@@ -261,6 +262,7 @@ function update_gameplay()
 	timer += 1
 
 	if cpt.health <= 0 then
+		sfx(56)
 		for i = 127,0,-5 do
 			_draw()
 			rectfill(0,127,127,i,0)
