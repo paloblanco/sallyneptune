@@ -16,6 +16,9 @@ function init_gameplay()
 	m2 = myrtle:new({x=9,y=6,z=12})
 	add(alist,m2)
 
+	g = goal:new({x=12,y=8,z=10})
+	add(alist,g)
+
 	cpt = neato:new({x=6,y=4,z=12})
 	add(alist,cpt)
 	pl:update(cpt)
@@ -225,6 +228,15 @@ function update_gameplay()
 	end
 
 	timer += 1
+
+	if cpt.health <= 0 then
+		for i = 127,0,-5 do
+			_draw()
+			rectfill(0,127,127,i,0)
+			flip()
+		end
+		start_gameover()
+	end
 end
 
 function draw_gameplay()
@@ -256,7 +268,7 @@ function draw_gameplay()
 	end
 
 	printo("health: ",2,2,10,0)
-	healthmeter = 50*(cpt.health/cpt.maxhealth)
+	healthmeter = max(50*(cpt.health/cpt.maxhealth),0)
 	rectfill(30,2,82,5,0)
 	rectfill(31,3,31+healthmeter,4,10)
 
@@ -348,4 +360,136 @@ function start_title()
 	init_title()
 	_update = update_title
 	_draw = draw_title
+end
+
+function start_gameover()
+	init_gameover()
+	_update = update_gameover
+	_draw = draw_gameover
+end
+
+function init_gameover()
+	colormax = 3
+	colornext = 1
+	rectangles={}
+	cls(0)
+	titletimer=0
+	color_gameover = {0,5,6}
+end
+
+function update_gameover()
+	if titletimer%20==0 then
+		add(rectangles,{1,colornext})
+		colornext = 1+((colornext)%colormax)
+	end
+	for r in all(rectangles) do
+		r[1] += 1
+		if (r[1] > 70) del(rectangles,r)
+	end
+
+	if btnp(4) or btnp(5) then
+		for i = 127,0,-5 do
+			rectfill(0,127,127,i,0)
+			flip()
+		end
+		start_gameplay()
+	end
+	titletimer += 1
+end
+
+function draw_gameover()
+	cls(0)
+	for r in all(rectangles) do
+		rectfill(64-r[1],64-r[1],64+r[1],64+r[1],color_gameover[r[2]])
+	end
+
+	dsprintxy("nice try",0,15,6,0,0)
+	dsprintxy("sally...",3,32,6,0,0)
+	printco("press z or x to try again", 60, 7, 0)
+
+	pal(7,15)
+    pal(13,1)
+    pal(10,14)
+    pal(3,10)
+    pal(2,14)
+    pal(12,6)
+    -- pal(8,13)
+    pal(5,1)
+    pal(12,1)
+    pal(6,10)
+	ixnow = ((titletimer\3)%4)*2
+	local spx = 0
+	local spy = 0
+	sspr(spx,spy,16,16,64-16,76,32,32)
+	pal()
+end
+
+function start_gamewin()
+	init_gamewin()
+	_update = update_gamewin
+	_draw = draw_gamewin
+end
+
+function init_gamewin()
+	colormax = #colors
+	colornext = 1
+	rectangles={}
+	cls(0)
+	titletimer=0
+	time_minutes = timer\1800
+	time_seconds = (timer\30)%60
+	str_seconds = ""..time_seconds
+	if (time_seconds < 10) str_seconds = "0"..time_seconds
+	str_time = ""..time_minutes..":"..str_seconds
+end
+
+function update_gamewin()
+	if titletimer%10==0 then
+		add(rectangles,{1,colornext})
+		colornext = 1+((colornext)%colormax)
+	end
+	for r in all(rectangles) do
+		r[1] += 1
+		if (r[1] > 70) del(rectangles,r)
+	end
+
+	if (btnp(4) or btnp(5)) and titletimer>60  then
+		for i = 127,0,-5 do
+			rectfill(0,127,127,i,0)
+			flip()
+		end
+		start_gameplay()
+	end
+	titletimer += 1
+end
+
+function draw_gamewin()
+	cls(14)
+	for r in all(rectangles) do
+		rectfill(64-r[1],64-r[1],64+r[1],64+r[1],colors[r[2]])
+	end
+
+	dsprintxy("you",5,15,14,0,0)
+	dsprintxy("did it!",12,32,14,0,0)
+	printco('time: '..str_time, 52, 14, 0)
+
+	printco("by palo blanco for toyboxjam 3",110,7,0)
+	printco("thanks for playing!",118,14,0)
+
+	pal(7,15)
+    pal(13,1)
+    pal(10,14)
+    pal(3,10)
+    pal(2,14)
+    pal(12,6)
+    -- pal(8,13)
+    pal(5,1)
+    pal(12,1)
+    pal(6,10)
+	ixnow = ((titletimer\3)%4)*2
+	local spx = 16 + 8*ixnow
+	local spy = 0
+	sspr(spx,spy,16,16,64-16,76,32,32)
+	pal()
+
 end
