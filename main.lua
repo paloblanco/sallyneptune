@@ -1,7 +1,11 @@
 function _init()
 	-- setup stuff
 	setup_asciitables()
+	start_gameplay()
+end
 
+function init_gameplay()
+	
 	-- create player
 	pl = player:new()
     alist = {}
@@ -22,25 +26,6 @@ function _init()
 	timer=0
 end
 
-
-function _update()
-	
-	locklistold = locklist
-	locklist={}
-    for aa in all(alist) do
-        aa:update()
-    end
-	pl:update(cpt)
-
-	if #locklist > 0 then
-		sort(locklist)
-		mylock = locklist[#locklist]
-	else
-		mylock = nil
-	end
-
-	timer += 1
-end
 
 function draw_3d()
 	local celz0
@@ -222,11 +207,29 @@ function draw_3d()
 	return deptharray
 end
 
+function update_gameplay()
+	
+	locklistold = locklist
+	locklist={}
+    for aa in all(alist) do
+        aa:update()
+    end
+	pl:update(cpt)
 
-function _draw()
+	if #locklist > 0 then
+		sort(locklist)
+		mylock = locklist[#locklist]
+	else
+		mylock = nil
+	end
+
+	timer += 1
+end
+
+function draw_gameplay()
 	-- cls()
 	-- to do: sky? stars?
-	rectfill(0,0,127,viewheight-1,2)
+	rectfill(0,0,127,viewheight-1,1)
 	deptharray = draw_3d()
 	
 	-- sort sprites
@@ -266,7 +269,10 @@ function _draw()
 	print("alist: "..#alist)
 	print("cptz: "..cpt.z)
 	print("off: "..cpt.offtime)
+end
 
-	
-
+function start_gameplay()
+	init_gameplay()
+	_update = update_gameplay
+	_draw = draw_gameplay
 end
