@@ -223,11 +223,11 @@ neatosp0=96
 neatosp={98,100,102,104}
 
 function neato:draw()
-    pal(7,10)
+    pal(7,15)
     pal(13,1)
-    pal(10,13)
+    pal(10,14)
     pal(3,10)
-    pal(2,13)
+    pal(2,14)
     pal(12,6)
     -- pal(8,13)
     pal(5,1)
@@ -363,7 +363,6 @@ function actor:check_collisions()
 end
 
 laser = actor:new()
-colors = {8,9,10,11,12,13,6}
 laser.targs={}
 
 function laser:init()

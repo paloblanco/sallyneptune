@@ -19,7 +19,7 @@ yplane1 = sin(-fov/2)
 planelength = sqrt((xplane0-xplane1)^2 + (yplane0-yplane1)^2)
 shortestdist = cos(fov/2)
 
--- true: to get wall patterns
+
 -- based on distance
 
 patterns={
@@ -32,6 +32,9 @@ patterns={
 0b1000010100100101.011,
 0b1010010100100101.011,
 0b1010010110100101.011}
+
+-- colors for rainbow
+colors = {8,9,10,11,12,13,6}
 
 -- tile info - yvalues are keys
 tileinfo={}

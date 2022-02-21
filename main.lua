@@ -1,7 +1,8 @@
 function _init()
 	-- setup stuff
 	setup_asciitables()
-	start_gameplay()
+	-- start_gameplay()
+	start_title()
 end
 
 function init_gameplay()
@@ -273,6 +274,78 @@ end
 
 function start_gameplay()
 	init_gameplay()
+	cls(0)
+	update_gameplay()
+	for i=127,0,-5 do
+		draw_gameplay()
+		rectfill(0,0,127,i,0)
+		flip()
+	end
 	_update = update_gameplay
 	_draw = draw_gameplay
+end
+
+function init_title()
+	colormax = #colors
+	colornext = 1
+	rectangles={}
+	cls(0)
+	titletimer=0
+end
+
+function update_title()
+	if titletimer%10==0 then
+		add(rectangles,{1,colornext})
+		colornext = 1+((colornext)%colormax)
+	end
+	for r in all(rectangles) do
+		r[1] += 1
+		if (r[1] > 70) del(rectangles,r)
+	end
+
+	if btnp(4) or btnp(5) then
+		for i = 127,0,-5 do
+			rectfill(0,127,127,i,0)
+			flip()
+		end
+		start_gameplay()
+	end
+	titletimer += 1
+end
+
+function draw_title()
+	cls(1)
+	for r in all(rectangles) do
+		rectfill(64-r[1],64-r[1],64+r[1],64+r[1],colors[r[2]])
+	end
+
+	dsprintxy("sally",5,15,14,0,0)
+	dsprintxy("neptune",12,32,14,0,0)
+	printco('vs the monocronies', 52, 14, 0)
+
+	printco("by palo blanco for toyboxjam 3",110,7,0)
+	printco("press z or x to start!",118,14,0)
+
+	pal(7,15)
+    pal(13,1)
+    pal(10,14)
+    pal(3,10)
+    pal(2,14)
+    pal(12,6)
+    -- pal(8,13)
+    pal(5,1)
+    pal(12,1)
+    pal(6,10)
+	ixnow = ((titletimer\3)%4)*2
+	local spx = 16 + 8*ixnow
+	local spy = 0
+	sspr(spx,spy,16,16,64-16,76,32,32)
+	pal()
+
+end
+
+function start_title()
+	init_title()
+	_update = update_title
+	_draw = draw_title
 end
