@@ -39,6 +39,7 @@ function fix_map()
 	actor_tiles[141] = myrtle
 	actor_tiles[142] = goal
 	actor_tiles[161] = neato
+	actor_tiles[139] = key
 
 	for xx=0,15,1 do
 		for yy=1,15,1 do
@@ -242,7 +243,7 @@ function draw_3d()
 end
 
 function update_gameplay()
-	
+	needkey=false
 	locklistold = locklist
 	locklist={}
     for aa in all(alist) do
@@ -302,6 +303,8 @@ function draw_gameplay()
 	rectfill(30,2,82,5,0)
 	rectfill(31,3,31+healthmeter,4,10)
 
+	if (needkey) printco('you need a key',40,7,0)
+        
 
 
 	cursor(0,40) color(0)

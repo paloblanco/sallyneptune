@@ -315,10 +315,45 @@ function neato:update()
     end
 	
 	local q = self.z - 0.6
-	if (mz(self.x+self.dx,self.y) > q)
-	then self.x += self.dx end
-	if (mz(self.x,self.y+self.dy) > q)
-	then self.y += self.dy end
+	if (mz(self.x+self.dx,self.y) > q) then 
+        self.x += self.dx 
+    elseif mget(self.x+self.dx,self.y)\16 == 5 then
+        if self.keys >= 1 then
+            local xx = flr(self.x+self.dx)
+            local yy = flr(self.y)
+            mset(xx,yy,80)
+            sfx(54)
+            for xxx=xx-1,xx+1,1 do
+                for yyy=yy-1,yy+1,1 do
+                    if mget(xxx,yyy)\16 == 5 then
+                        mset(xxx,yyy,80)
+                    end
+                end
+            end
+        else
+            needkey=true
+        end
+    end
+	if (mz(self.x,self.y+self.dy) > q) then 
+        self.y += self.dy 
+    elseif mget(self.x,self.y+self.dy)\16 == 5 then
+        if self.keys >= 1 then
+            local xx = flr(self.x)
+            local yy = flr(self.y+self.dy)
+            mset(xx,yy,80)
+            sfx(54)
+            for xxx=xx-1,xx+1,1 do
+                for yyy=yy-1,yy+1,1 do
+                    if mget(xxx,yyy)\16 == 5 then
+                        mset(xxx,yyy,80)
+                    end
+                end
+            end
+        else
+            needkey=true
+        end
+
+    end
 	
 	-- friction
 	self.dx *= 0.6
@@ -341,6 +376,7 @@ function neato:update()
 					 mz(self.x,self.y) < self.z+0.1)
 		then
 			self.dz=-0.2
+            sfx(44)
 		end
 	end
     self.shottime += -1
@@ -573,10 +609,39 @@ heart.sp=91
 function heart:bump_me(other)
     other.health += 20
     other.health = min(100,other.health)
+    sfx(51)
     self:kill_me()
 end
 
 function heart:update()
+    -- z means player feet
+	if (self.z >= mz(self.x,self.y) and self.dz >=0) then
+		self.z = mz(self.x,self.y)
+		self.dz = 0
+        self.ground = true
+	else
+		self.dz=self.dz+0.01
+		self.z =self.z + self.dz
+        self.ground = false
+	end
+
+	-- jetpack / jump when standing
+	if self.ground then 
+        self.dz=-0.05
+		self.ground = false
+	end
+end
+
+key = actor:new()
+key.sp=75
+
+function key:bump_me(other)
+    other.keys += 1
+    sfx(39)
+    self:kill_me()
+end
+
+function key:update()
     -- z means player feet
 	if (self.z >= mz(self.x,self.y) and self.dz >=0) then
 		self.z = mz(self.x,self.y)
