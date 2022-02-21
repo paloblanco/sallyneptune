@@ -6,25 +6,38 @@ function _init()
 	pl = player:new()
     alist = {}
 
-	orb = actor:new({x=6,y=6,z=16})
-	add(alist,orb)
-	orb2 = actor:new({x=7,y=6,z=16})
-	add(alist,orb2)
+	m1 = myrtle:new({x=9,y=4,z=12})
+	add(alist,m1)
 
 	cpt = neato:new({x=6,y=4,z=12})
 	add(alist,cpt)
 	pl:update(cpt)
+
+	locklist={} -- who is in your sights
+	mylock = nil
+
+	timer=0
 end
 
 
 function _update()
 	
-	
+	locklist={}
     for aa in all(alist) do
         aa:update()
     end
 	pl:update(cpt)
 
+
+
+	if #locklist > 0 then
+		sort(locklist)
+		mylock = locklist[#locklist]
+	else
+		mylock = nil
+	end
+
+	timer += 1
 end
 
 function draw_3d()
@@ -122,10 +135,11 @@ function draw_3d()
 			g_color =  tiletype[2]
 			col = col%16
 
-			celz=16-col*1 -- inlined for speed
+			celz=16-col*.5 -- inlined for speed
 			
 			
 			if (col==15) then skip=false end
+			if (tdist > 60) skip = false --max draw distance
 			
 			--discard close hits
 			if (tdist > 0.005) then
@@ -217,15 +231,21 @@ function _draw()
 	for aa in all(alist) do
 		aa:get_cam_params(pl.x,pl.y,pl.z,pl.d)
 	end
-	-- SORT HERE
 	sort(alist)
+	
 	-- draw sprites
 	for aa in all(alist) do
-		-- aa:draw_simple(pl.x,pl.y,pl.z,pl.d)
-		-- aa:draw_dumb(pl.x,pl.y,pl.z,pl.d)
-		-- aa:draw_best(pl.x,pl.y,pl.z,pl.d)
 		aa:draw()
 	end
+
+
+	-- GUI
+	--LOCK
+	if (mylock) then
+		circ(mylock.sx,mylock.sy,10,9)
+		-- circ()
+	end
+
 
 	cursor(0,0) color(0)
 	print("cpu:"..flr(stat(1)*100).."%",1,1)
@@ -234,5 +254,7 @@ function _draw()
 	
 	print("alist: "..#alist)
 	print("cptz: "..cpt.z)
+
+	
 
 end

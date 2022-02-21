@@ -18,8 +18,18 @@ function player:update(target)
 	local xoff = -cos(self.d)*self.camd
 	local yoff = -sin(self.d)*self.camd
 
-	self.x = self.x + xoff
-	self.y = self.y + yoff
+	local step=0
+	while step < 10 do
+		self.x = self.x + .1*xoff
+		self.y = self.y + .1*yoff
+		if (self.z >= mz(self.x,self.y)) then
+			step = 10
+			self.x = self.x - .1*xoff
+			self.y = self.y - .1*yoff
+		else 
+			step += 1
+		end 
+	end
 end
 
 function player:return_view()

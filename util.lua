@@ -48,7 +48,7 @@ tileinfo[7] = {83,7}
 
 -- map z
 function mz(x,y)
-	return 16-mget(x,y)*1%16
+	return 16-.5*(mget(x,y)*1%16)
 end
 
 -- sort on dist

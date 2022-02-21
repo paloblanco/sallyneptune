@@ -3,6 +3,8 @@ actor = thing:new()
 actor.x=0
 actor.y=0
 actor.z=0
+actor.sx=0
+actor.sy=0
 actor.loc = flr(256*actor.y) + flr(actor.x)
 actor.loc0= actor.loc
 actor.xf = flr(actor.x)
@@ -21,6 +23,15 @@ actor.d=0
 actor.timer=0
 actor.jetpack=false
 actor.killme=false
+actor.ground=true
+
+function actor:check_lock()
+    if abs(self.ang_cam) <= .02 and self.dist > 2 then
+        add(locklist,self)
+    else
+        del(locklist,self)
+    end
+end
 
 
 function actor:move()
@@ -58,11 +69,13 @@ function actor:draw_prep(x,y,z,dir) -- needs view plane and player x,y,z,dir
     local sx = (fix_ang)*128+64
     -- local sy = (dz*viewcenter/dist)+horizon
     local sy = (dz*unit/dist)+horizon
-    if (sy>127 or sy < 1) return
+    if (sy>148 or sy < 1) return
     --circfill(sx,sy,unit/dist,11)
     local hw = self.vwidth*unit/dist
     local sx0 = sx-.5*hw
     local sy0 = sy-hw
+    self.sx=sx
+    self.sy=sy-.5*hw
     return dist, sx0, sy0, hw
 end
 
@@ -150,12 +163,24 @@ neato = actor:new()
 neato.sp = 96
 neato.spsize = 16
 neato.timer=0
+neato.mylock = nil
 
 neatosp0=96
 neatosp={98,100,102,104}
 
 function neato:draw()
+    pal(7,15)
+    pal(13,1)
+    pal(10,13)
+    pal(3,6)
+    pal(2,13)
+    pal(12,6)
+    pal(8,13)
+    pal(5,1)
+    pal(12,1)
+
     self:draw_best(pl.x,pl.y,pl.z,pl.d)
+    pal()
 end
 
 function neato:update()
@@ -222,6 +247,7 @@ function neato:update()
 	if (self.z >= mz(self.x,self.y) and self.dz >=0) then
 		self.z = mz(self.x,self.y)
 		self.dz = 0
+        self.ground = true
 	else
 		self.dz=self.dz+0.01
 		self.z =self.z + self.dz
@@ -274,6 +300,7 @@ function laser:draw()
 
     if sx and sx0 then
         line(sx0,sy0,sx,sy,self.color)
+        circfill(sx,sy,h/5,self.color)
     end
 end
 
@@ -293,7 +320,7 @@ explosion.color = 8
 explosion.timer = 8
 explosion.sp = 108
 spr_explosion = {108, 109, 110, 111}
-explosion.timer = 9
+explosion.timer = 8
 
 function make_explosion(x,y,z,col)
     local ee = explosion:new({x=x,y=y,z=z,color=col})
@@ -303,7 +330,7 @@ end
 function explosion:update()
     self.timer += -1
 
-    local ixspr = 5-max(flr((self.timer/9)*4),1)
+    local ixspr = 5-max(flr((self.timer/8)*4),1)
     if (self.timer < 0)  then
         self:kill_me()
         return
@@ -326,4 +353,46 @@ function explosion:draw()
         sspr(8*(self.sp%16),8*(self.sp\16),self.spsize,self.spsize,sx,sy,h,h,true,true)
     end
     pal()
+end
+
+myrtle = actor:new()
+myrtle.sp=77
+myrtle.speed = 0.075
+myrtle.ground = true
+myrtle.timer = 0
+
+function myrtle:update()
+    local cptdist = sqrt((self.x-cpt.x)^2 + (self.y-cpt.y)^2)
+    local dx = -self.speed*(self.x-cpt.x)/cptdist
+    local dy = -self.speed*(self.y-cpt.y)/cptdist
+    
+    local q = self.z - 0.6
+	if (mz(self.x+dx,self.y) > q)
+	then self.x += dx end
+	if (mz(self.x,self.y + dy) > q)
+	then self.y += dy end
+
+    -- z means player feet
+	if (self.z >= mz(self.x,self.y) and self.dz >=0) then
+		self.z = mz(self.x,self.y)
+		self.dz = 0
+        self.ground = true
+	else
+		self.dz=self.dz+0.01
+		self.z =self.z + self.dz
+        self.ground = false
+	end
+
+	-- jetpack / jump when standing
+	if self.ground then 
+        self.dz=-0.05
+		self.ground = false
+	end
+
+    --lock on me
+    self:check_lock()
+end
+
+function myrtle:draw()
+    self:draw_best(pl.x,pl.y,pl.z,pl.d)
 end
