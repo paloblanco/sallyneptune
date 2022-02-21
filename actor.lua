@@ -540,7 +540,6 @@ goal.sp = 14
 goal.spsize = 16
 
 function goal:bump_me(other)
-    
     for i = 127,0,-5 do
         _draw()
         rectfill(0,127,127,i,14)
@@ -550,6 +549,34 @@ function goal:bump_me(other)
 end
 
 function goal:update()
+    -- z means player feet
+	if (self.z >= mz(self.x,self.y) and self.dz >=0) then
+		self.z = mz(self.x,self.y)
+		self.dz = 0
+        self.ground = true
+	else
+		self.dz=self.dz+0.01
+		self.z =self.z + self.dz
+        self.ground = false
+	end
+
+	-- jetpack / jump when standing
+	if self.ground then 
+        self.dz=-0.05
+		self.ground = false
+	end
+end
+
+heart = actor:new()
+heart.sp=91
+
+function heart:bump_me(other)
+    other.health += 20
+    other.health = min(100,other.health)
+    self:kill_me()
+end
+
+function heart:update()
     -- z means player feet
 	if (self.z >= mz(self.x,self.y) and self.dz >=0) then
 		self.z = mz(self.x,self.y)

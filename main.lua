@@ -10,17 +10,20 @@ function init_gameplay()
 	-- create player
 	pl = player:new()
     alist = {}
-
-	m1 = myrtle:new({x=9,y=4,z=12})
-	add(alist,m1)
-	m2 = myrtle:new({x=9,y=6,z=12})
-	add(alist,m2)
-
-	g = goal:new({x=12,y=8,z=10})
-	add(alist,g)
-
 	cpt = neato:new({x=6,y=4,z=12})
 	add(alist,cpt)
+
+
+
+	-- m1 = myrtle:new({x=9,y=4,z=12})
+	-- add(alist,m1)
+	-- m2 = myrtle:new({x=9,y=6,z=12})
+	-- add(alist,m2)
+
+	-- g = goal:new({x=12,y=8,z=10})
+	-- add(alist,g)
+	fix_map()
+	
 	pl:update(cpt)
 
 	locklistold = {}
@@ -28,6 +31,33 @@ function init_gameplay()
 	mylock = nil
 
 	timer=0
+end
+
+function fix_map()
+	actor_tiles = {}
+	actor_tiles[155] = heart
+	actor_tiles[141] = myrtle
+	actor_tiles[142] = goal
+	actor_tiles[161] = neato
+
+	for xx=0,15,1 do
+		for yy=1,15,1 do
+			tileup = mget(xx,yy-1)
+			tilehere = mget(xx,yy)
+			actorhere = actor_tiles[tilehere]
+			if (actorhere!= nil) then
+				mset(xx,yy,tileup)
+				if tilehere == 161 then
+					cpt.x=xx
+					cpt.y=yy
+				else
+					local newact = actorhere:new({x=xx,y=yy,z=mz(xx,yy)})
+					add(alist,newact)
+				end
+			end
+		end
+	end
+	-- return cpt
 end
 
 
