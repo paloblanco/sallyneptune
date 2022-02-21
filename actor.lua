@@ -30,12 +30,35 @@ actor.health=5
 actor.maxhealth=5
 actor.hurt=false
 actor.mainc=1
+actor.offtime=0
+actor.offx=0
+actor.offy=0
+actor.tz=0 -- floor height under character, for shadow
+actor.shadow=false
 
 function actor:check_lock()
     if abs(self.ang_cam) <= .02 and self.dist > 2 then
         add(locklist,self)
     else
         del(locklist,self)
+    end
+end
+
+function actor:bump_me(other)
+end
+
+function actor:process_offtime()
+    if self.offtime > 0 then
+        if self.offtime%2==1 then
+            self.offx = 4*flr(rnd(3))-1
+            self.offy = 4*flr(rnd(3))-1
+            self.hurt= not self.hurt
+        end
+        self.offtime += -1
+    else
+        self.offx=0
+        self.offy=0
+        self.hurt=false 
     end
 end
 
@@ -47,7 +70,7 @@ end
 
 function actor:hurt_me()
     self.health += -1
-    self.hurt=true
+    self.offtime = 8
     if self.health <= 0 then
         self:kill_me()
     end
@@ -97,7 +120,7 @@ function actor:draw_prep(x,y,z,dir) -- needs view plane and player x,y,z,dir
     self.sx=sx
     self.sy=sy-.5*hw
     self.hw=hw
-    return dist, sx0, sy0, hw
+    return dist, sx0+self.offx, sy0+self.offy, hw
 end
 
 function actor:draw_simple(x,y,z,dir)
@@ -147,7 +170,7 @@ end
 function actor:draw_best(x,y,z,dir)
     -- draw sprite slice by slice according to geometry
     -- slowest option
-    if (self.hurt) pal(mainc,7)
+    if (self.hurt) pal(self.mainc,7)
     dist, sx0, sy0, hw = self:draw_prep(x,y,z,dir)
     if (dist == nil) return
     local sy1 = sy0+hw
@@ -176,7 +199,6 @@ function actor:draw_best(x,y,z,dir)
     end
     fillp()
     pal()
-    self.hurt = false
 end
 
 function actor:draw()
@@ -191,23 +213,34 @@ neato.mylock = nil
 neato.target = nil
 neato.shottimemax = 10
 neato.shottime = 0
+neato.maxhealth=100
+neato.health=100
+neato.shadow=true
+neato.keys=0
+neato.mainc=10
 
 neatosp0=96
 neatosp={98,100,102,104}
 
 function neato:draw()
-    pal(7,15)
+    pal(7,10)
     pal(13,1)
     pal(10,13)
-    pal(3,6)
+    pal(3,10)
     pal(2,13)
     pal(12,6)
-    pal(8,13)
+    -- pal(8,13)
     pal(5,1)
     pal(12,1)
+    pal(6,10)
 
     self:draw_best(pl.x,pl.y,pl.z,pl.d)
     pal()
+end
+
+function neato:hurt_me(damage)
+    self.health += -damage
+    self.offtime = 8
 end
 
 function neato:update()
@@ -257,7 +290,8 @@ function neato:update()
 	spd = sqrt(dx*dx+dy*dy)
 	if (spd) then
 	
-		spd = 0.1 / spd
+		-- spd = 0.1 / spd
+        spd = 0.075 / spd
 		dx *= spd
 		dy *= spd
 		
@@ -291,12 +325,13 @@ function neato:update()
 	self.dy *= 0.6
 	
 	-- z means player feet
-	if (self.z >= mz(self.x,self.y) and self.dz >=0) then
-		self.z = mz(self.x,self.y)
+    self.tz=mz(self.x,self.y)
+	if (self.z >= self.tz and self.dz >=0) then
+		self.z = self.tz
 		self.dz = 0
         self.ground = true
 	else
-		self.dz=self.dz+0.01
+		self.dz=self.dz+0.022
 		self.z =self.z + self.dz
 	end
 
@@ -305,10 +340,26 @@ function neato:update()
 		if (self.jetpack or 
 					 mz(self.x,self.y) < self.z+0.1)
 		then
-			self.dz=-0.15
+			self.dz=-0.2
 		end
 	end
     self.shottime += -1
+
+    self:process_offtime()
+    self:check_collisions()
+end
+
+function actor:check_collisions()
+    local i = #alist
+    if (i==0) return
+    while i>0 do
+        local act = alist[i]
+        if (act.dist > 3) return
+        if abs(self.x-act.x)<.5 and abs(self.y-act.y)<.5 and abs(self.z-act.z)<.5 then
+            act:bump_me(self)
+        end
+        i += -1
+    end
 end
 
 laser = actor:new()
@@ -325,6 +376,11 @@ function laser:init()
     self.d = cpt.d
     self.dx = self.s * cos(self.d)
     self.dy = self.s * sin(self.d)
+    if cpt.mylock then
+        self.dz = ((cpt.mylock.z-.5) - self.z)/cpt.mylock.dist
+    else
+        self.dz=0    
+    end
     for i in all(locklistold) do
         add(self.targs,i)
     end
@@ -339,6 +395,7 @@ function laser:update()
     self.x0,self.y0,self.z0=self.x,self.y,self.z
     self.x = self.x + self.dx
     self.y = self.y + self.dy
+    self.z = self.z + self.dz
 
     if (mz(self.x,self.y) < self.z) self.killme = true
 
@@ -363,7 +420,9 @@ function laser:draw()
     sx,sy,h = point2pix(self.x,self.y,self.z,pl)
 
     if sx and sx0 then
+        circfill(sx,sy,1+(h/5),7)
         line(sx0,sy0,sx,sy,self.color)
+        
         circfill(sx,sy,h/5,self.color)
     end
 end
@@ -458,14 +517,21 @@ function myrtle:update()
 
     --lock on me
     self:check_lock()
+
+    self:process_offtime()
 end
 
 function myrtle:draw()
+    pal(self.mainc,6)
     self:draw_best(pl.x,pl.y,pl.z,pl.d)
-    
+    pal()
     local len = 10*self.health/self.maxhealth
     if len < 10 then
         rectfill(self.sx-6,self.sy-self.hw-1,self.sx+6,self.sy-self.hw+1,0)
         rectfill(self.sx-5,self.sy-self.hw,self.sx-5+len,self.sy-self.hw,8)
     end
+end
+
+function myrtle:bump_me(other)
+    if (other.offtime <= 0) other:hurt_me(5)
 end

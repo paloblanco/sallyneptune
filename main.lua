@@ -74,7 +74,7 @@ function draw_3d()
 		local spr_ix = tiletype[1]
 		local g_color =  tiletype[2]
 		col = col%16
-		local celz=16-col*1
+		local celz=16-col*.5
 		
 		-- calc cast vector
 		local dist_x, dist_y,vx,vy
@@ -226,7 +226,7 @@ end
 function _draw()
 	-- cls()
 	-- to do: sky? stars?
-	rectfill(0,0,127,viewheight-1,13)
+	rectfill(0,0,127,viewheight-1,2)
 	deptharray = draw_3d()
 	
 	-- sort sprites
@@ -251,14 +251,21 @@ function _draw()
 		circ(cpt.target.sx,cpt.target.sy,11,8)
 	end
 
+	printo("health: ",2,2,10,0)
+	healthmeter = 50*(cpt.health/cpt.maxhealth)
+	rectfill(30,2,82,5,0)
+	rectfill(31,3,31+healthmeter,4,10)
 
-	cursor(0,0) color(0)
-	print("cpu:"..flr(stat(1)*100).."%",1,1)
+
+
+	cursor(0,40) color(0)
+	print("cpu:"..flr(stat(1)*100).."%")
 	-- print("pl :"..pl.d)
 	-- print("pl:"..pl.x.." "..pl.y.." "..pl.z)
 	
 	print("alist: "..#alist)
 	print("cptz: "..cpt.z)
+	print("off: "..cpt.offtime)
 
 	
 
