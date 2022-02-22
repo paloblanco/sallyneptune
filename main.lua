@@ -26,6 +26,26 @@ function init_gameplay()
 	
 	pl:update(cpt)
 
+	-- sort sprites
+	for aa in all(alist) do
+		aa:get_cam_params(pl.x,pl.y,pl.z,pl.d)
+	end
+	sort(alist)
+
+	sectors={}
+	for xx=0,127,16 do
+		local sec = {}
+		local xnext = xx+16
+		secix = xx\16
+		sectors[secix] = sec
+	end
+
+	for aa in all(alist) do
+		if aa.x > 32 then
+			aa.to_sector()
+		end
+	end
+
 	locklistold = {}
 	locklist={} -- who is in your sights
 	mylock = nil
@@ -245,10 +265,23 @@ end
 
 function update_gameplay()
 	needkey=false
+
+	-- sector load
+	local secnow = cpt.x \ 16
+	for ss=max(0,secnow-1),min(secnow+1,#sectors),1 do
+		for aa in all(sectors[ss]) do
+			aa:load_alist()
+		end
+	end
+
 	locklistold = locklist
 	locklist={}
     for aa in all(alist) do
-        aa:update()
+        if (aa.x\16 < secnow-1) or (aa.x\16 > secnow+1) then
+			aa:to_sector()
+		else
+			aa:update()
+		end
     end
 	pl:update(cpt)
 

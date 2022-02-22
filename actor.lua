@@ -35,6 +35,19 @@ actor.offx=0
 actor.offy=0
 actor.tz=0 -- floor height under character, for shadow
 actor.shadow=false
+actor.secix = 0 --what sector
+
+function actor:to_sector()
+    self.secix = self.x\16
+    add(sectors[self.secix],self)
+    del(alist,self)
+    del(locklist,self)
+end
+
+function actor:load_alist()
+    del(sectors[self.secix],self)
+    add(alist,self)
+end
 
 function actor:check_lock()
     if abs(self.ang_cam) <= .02 and self.dist > 2 then
@@ -521,17 +534,22 @@ myrtle.timer = 0
 myrtle.health = 5
 myrtle.maxhealth = 5
 myrtle.mainc=8
+myrtle.chase=false
 
 function myrtle:update()
     local cptdist = sqrt((self.x-cpt.x)^2 + (self.y-cpt.y)^2)
     local dx = -self.speed*(self.x-cpt.x)/cptdist
     local dy = -self.speed*(self.y-cpt.y)/cptdist
     
-    local q = self.z - 0.6
-	if (mz(self.x+dx,self.y) > q)
-	then self.x += dx end
-	if (mz(self.x,self.y + dy) > q)
-	then self.y += dy end
+    if (cptdist <= 10) self.chase=true
+    
+    if self.chase then
+        local q = self.z - 0.6
+        if (mz(self.x+dx,self.y) > q)
+        then self.x += dx end
+        if (mz(self.x,self.y + dy) > q)
+        then self.y += dy end
+    end
 
     -- z means player feet
 	if (self.z >= mz(self.x,self.y) and self.dz >=0) then
