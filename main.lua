@@ -10,10 +10,6 @@ function init_gameplay()
 	-- create player
 	pl = player:new()
     alist = {}
-	cpt = neato:new({x=6,y=4,z=12})
-	add(alist,cpt)
-
-
 
 	-- m1 = myrtle:new({x=9,y=4,z=12})
 	-- add(alist,m1)
@@ -22,6 +18,11 @@ function init_gameplay()
 
 	-- g = goal:new({x=12,y=8,z=10})
 	-- add(alist,g)
+	guns=0
+	gunsmax=0
+	kills=0
+	killmax=0
+	
 	fix_map()
 	
 	pl:update(cpt)
@@ -42,14 +43,14 @@ function init_gameplay()
 
 	for aa in all(alist) do
 		if aa.x > 32 then
-			aa.to_sector()
+			aa:to_sector()
 		end
 	end
 
 	locklistold = {}
 	locklist={} -- who is in your sights
 	mylock = nil
-
+	
 	timer=0
 end
 
@@ -61,20 +62,22 @@ function fix_map()
 	actor_tiles[161] = neato
 	actor_tiles[139] = key
 	actor_tiles[191] = blue
+	actor_tiles[154] = gun
 
-	for xx=0,15,1 do
-		for yy=1,15,1 do
+	for xx=0,127,1 do
+		for yy=1,31,1 do
 			tileup = mget(xx,yy-1)
 			tilehere = mget(xx,yy)
 			actorhere = actor_tiles[tilehere]
 			if (actorhere!= nil) then
 				mset(xx,yy,tileup)
 				if tilehere == 161 then
-					cpt.x=xx
-					cpt.y=yy
+					cpt = neato:new({x=xx,y=yy,z=15})
+					add(alist,cpt)
 				else
 					local newact = actorhere:new({x=xx,y=yy,z=mz(xx,yy)})
 					add(alist,newact)
+					if (tilehere==141 or tilehere==191) killmax += 1
 				end
 			end
 		end
@@ -182,7 +185,7 @@ function draw_3d()
 			
 			
 			if (col==15) then skip=false end
-			if (tdist > 60) skip = false --max draw distance
+			if (tdist > 45) skip = false --max draw distance
 			
 			--discard close hits
 			if (tdist > 0.005) then
@@ -337,6 +340,7 @@ function draw_gameplay()
 	healthmeter = max(50*(cpt.health/cpt.maxhealth),0)
 	rectfill(30,2,82,5,0)
 	rectfill(31,3,31+healthmeter,4,10)
+	printo("keys: "..cpt.keys.." gun: "..guns,2,10,10,0)
 
 	if (needkey) printco('you need a key',40,7,0)
         
@@ -540,6 +544,9 @@ function draw_gamewin()
 	dsprintxy("you",5,15,14,0,0)
 	dsprintxy("did it!",12,32,14,0,0)
 	printco('time: '..str_time, 52, 14, 0)
+	printco('kills: '..kills.."/"..killmax, 60, 14, 0)
+	printco("gun ups: "..guns.."/"..gunsmax, 68, 14, 0)
+
 
 	printco("by palo blanco for toyboxjam 3",110,7,0)
 	printco("thanks for playing!",118,14,0)

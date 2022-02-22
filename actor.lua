@@ -79,6 +79,7 @@ function actor:kill_me()
     del(alist,self)
     del(locklist,self)
     self.killme=true
+    if (self.sp==77 or self.sp==127) kills+=1
 end
 
 function actor:hurt_me()
@@ -336,6 +337,7 @@ function neato:update()
             local yy = flr(self.y)
             mset(xx,yy,80)
             sfx(54)
+            self.keys += -1
             for xxx=xx-1,xx+1,1 do
                 for yyy=yy-1,yy+1,1 do
                     if mget(xxx,yyy)\16 == 5 then
@@ -355,6 +357,7 @@ function neato:update()
             local yy = flr(self.y+self.dy)
             mset(xx,yy,80)
             sfx(54)
+            self.keys += -1
             for xxx=xx-1,xx+1,1 do
                 for yyy=yy-1,yy+1,1 do
                     if mget(xxx,yyy)\16 == 5 then
@@ -535,6 +538,7 @@ myrtle.health = 5
 myrtle.maxhealth = 5
 myrtle.mainc=8
 myrtle.chase=false
+
 
 function myrtle:update()
     local cptdist = sqrt((self.x-cpt.x)^2 + (self.y-cpt.y)^2)
@@ -768,3 +772,35 @@ function bullet:bump_me(other)
     self:kill_me()
 end
 
+gun = actor:new()
+gun.sp=90
+
+function gun:init()
+    gunsmax += 1
+end
+
+function gun:bump_me(other)
+    other.shottimemax *= .8
+    sfx(39)
+    self:kill_me()
+    guns+=1
+end
+
+function gun:update()
+    -- z means player feet
+	if (self.z >= mz(self.x,self.y) and self.dz >=0) then
+		self.z = mz(self.x,self.y)
+		self.dz = 0
+        self.ground = true
+	else
+		self.dz=self.dz+0.01
+		self.z =self.z + self.dz
+        self.ground = false
+	end
+
+	-- jetpack / jump when standing
+	if self.ground then 
+        self.dz=-0.05
+		self.ground = false
+	end
+end
