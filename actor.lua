@@ -78,8 +78,9 @@ end
 function actor:kill_me()
     del(alist,self)
     del(locklist,self)
+    if ((self.sp==77 or self.sp==127) and not self.killme) kills+=1
     self.killme=true
-    if (self.sp==77 or self.sp==127) kills+=1
+    
 end
 
 function actor:hurt_me()
@@ -487,6 +488,7 @@ end
 function make_laser()
     local ll = laser:new()
     add(alist,ll)
+    sfx(53)
 end
 
 explosion = actor:new()
@@ -547,7 +549,7 @@ function myrtle:update()
     
     if (cptdist <= 10) self.chase=true
     
-    if self.chase then
+    if self.chase and cptdist > .2 then
         local q = self.z - 0.6
         if (mz(self.x+dx,self.y) > q)
         then self.x += dx end
@@ -580,6 +582,8 @@ end
 
 function myrtle:draw()
     pal(self.mainc,6)
+    pal(2,0)
+    pal(13,0)
     self:draw_best(pl.x,pl.y,pl.z,pl.d)
     pal()
     local len = 10*self.health/self.maxhealth
@@ -590,7 +594,10 @@ function myrtle:draw()
 end
 
 function myrtle:bump_me(other)
-    if (other.offtime <= 0) other:hurt_me(5)
+    if (other.offtime <= 0) then
+        other:hurt_me(5)
+        sfx(49)
+    end
 end
 
 goal = actor:new()
@@ -603,6 +610,7 @@ function goal:bump_me(other)
         rectfill(0,127,127,i,14)
         flip()
     end
+    sfx(50)
     start_gamewin()
 end
 

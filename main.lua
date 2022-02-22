@@ -3,6 +3,7 @@ function _init()
 	setup_asciitables()
 	-- start_gameplay()
 	start_title()
+	music(6)
 end
 
 function init_gameplay()
@@ -52,6 +53,7 @@ function init_gameplay()
 	mylock = nil
 	
 	timer=0
+	music(-1)
 end
 
 function fix_map()
@@ -345,15 +347,6 @@ function draw_gameplay()
 	if (needkey) printco('you need a key',40,7,0)
         
 
-
-	cursor(0,40) color(0)
-	print("cpu:"..flr(stat(1)*100).."%")
-	-- print("pl :"..pl.d)
-	-- print("pl:"..pl.x.." "..pl.y.." "..pl.z)
-	
-	print("alist: "..#alist)
-	print("cptz: "..cpt.z)
-	print("off: "..cpt.offtime)
 end
 
 function start_gameplay()
@@ -447,6 +440,7 @@ function init_gameover()
 	cls(0)
 	titletimer=0
 	color_gameover = {0,5,6}
+	music(26)
 end
 
 function update_gameover()
@@ -464,7 +458,8 @@ function update_gameover()
 			rectfill(0,127,127,i,0)
 			flip()
 		end
-		start_gameplay()
+		-- start_gameplay()
+		run()
 	end
 	titletimer += 1
 end
@@ -513,6 +508,7 @@ function init_gamewin()
 	str_seconds = ""..time_seconds
 	if (time_seconds < 10) str_seconds = "0"..time_seconds
 	str_time = ""..time_minutes..":"..str_seconds
+	music(25)
 end
 
 function update_gamewin()
@@ -525,13 +521,13 @@ function update_gamewin()
 		if (r[1] > 70) del(rectangles,r)
 	end
 
-	if (btnp(4) or btnp(5)) and titletimer>60  then
-		for i = 127,0,-5 do
-			rectfill(0,127,127,i,0)
-			flip()
-		end
-		start_gameplay()
-	end
+	-- if (btnp(4) or btnp(5)) and titletimer>60  then
+	-- 	for i = 127,0,-5 do
+	-- 		rectfill(0,127,127,i,0)
+	-- 		flip()
+	-- 	end
+	-- 	start_gameplay()
+	-- end
 	titletimer += 1
 end
 
