@@ -2,6 +2,8 @@
 
 This is a small game I made for ToyBox Jam 3: https://itch.io/jam/toy-box-jam-3/entries
 
+[SallyNeptune](sallyneptune_0.gif)
+
 If you want to play it, you can visit the link above. This repo is used for deploying the game on your own system. 
 
 ## Requirements
