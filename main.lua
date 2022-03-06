@@ -89,6 +89,8 @@ end
 
 
 function draw_3d()
+	poke(0x5F38, 1) -- horiz loop tline
+	poke(0x5F39, 1) -- vert loop tline
 	local celz0
 	local col
 	local deptharray = {}
@@ -178,8 +180,10 @@ function draw_3d()
 			col=mget(ix,iy)
 			tiletype = tileinfo[col\16]
 			spr_ix = tiletype[1]
-			spr_x_coord = (spr_ix%16)*8
-			spr_y_coord = (spr_ix\16)*8
+			poke(0x5F3A, tiletype[3])
+			poke(0x5F3B, tiletype[4])
+			-- spr_x_coord = (spr_ix%16)*8
+			-- spr_y_coord = (spr_ix\16)*8
 			g_color =  tiletype[2]
 			col = col%16
 
@@ -202,13 +206,13 @@ function draw_3d()
 			
 			if (sy1 < sy) then
 				rectfill(sx,sy1-1,sx+res,sy,g_color0) -- floor drawing
-				line(sx,sy,sx+res,sy,5) -- floor accent
+				-- line(sx,sy,sx+res,sy,5) -- floor accent
 				if (wall_prev) then
-					line(sx,sy,sx+1,sy,0)
+					-- line(sx,sy,sx+1,sy,0)
 					wall_prev=false
 				end	
 				if lower_elevation then
-					line(sx,sy,sx+res,sy,0)
+					-- line(sx,sy,sx+res,sy,0)
 					lower_elevation=false
 				end
 				sy=sy1
@@ -239,17 +243,19 @@ function draw_3d()
 					fillp(patterns[min(flr(tdist/3),8)])
 					local wcol=7 + (last_dir)*6
 					-- rectfill(sx,sy1-1,sx+res,sy,wcol) -- wall draw
-					local yf = sy1
-					while yf+1 < sy do
-						local ystep = yscale
-						if yf+ystep > -1 then
-							if (sy < 127) ystep = min(yscale,sy-yf)
-							local dyspr = .5+8*ystep/yscale --  add .5 to improve tex tearing
-							sspr(spr_x_coord+pixx,spr_y_coord,1,dyspr,sx,yf,resolution,ystep+1)
-						end
-						yf = yf+yscale
-					end
-					line(sx,sy,sx+res,sy,0) -- accent
+					tline(sx,sy1-1,sx,sy,wallx,0,0,((celz0-celz)*0.125/yscale))
+
+					-- local yf = sy1
+					-- while yf+1 < sy do
+					-- 	local ystep = yscale
+					-- 	if yf+ystep > -1 then
+					-- 		if (sy < 127) ystep = min(yscale,sy-yf)
+					-- 		local dyspr = .5+8*ystep/yscale --  add .5 to improve tex tearing
+					-- 		sspr(spr_x_coord+pixx,spr_y_coord,1,dyspr,sx,yf,resolution,ystep+1)
+					-- 	end
+					-- 	yf = yf+yscale
+					-- end
+					-- line(sx,sy,sx+res,sy,0) -- accent
 					sy=sy1
 					fillp()
 					wall_prev=true
