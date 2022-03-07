@@ -191,7 +191,7 @@ function draw_3d()
 			
 			
 			if (col==15) then skip=false end
-			if (tdist > 45) skip = false --max draw distance
+			if (tdist > 40) skip = false --max draw distance
 			
 			--discard close hits
 			if (tdist > 0.005) then
@@ -243,7 +243,7 @@ function draw_3d()
 					fillp(patterns[min(flr(tdist/3),8)])
 					local wcol=7 + (last_dir)*6
 					-- rectfill(sx,sy1-1,sx+res,sy,wcol) -- wall draw
-					tline(sx,sy1-1,sx,sy,wallx,0,0,((celz0-celz)*0.125/yscale))
+					tline(sx,sy1-1,sx,sy,wallx,0,0,(1/yscale))
 
 					-- local yf = sy1
 					-- while yf+1 < sy do
