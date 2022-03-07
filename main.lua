@@ -12,13 +12,6 @@ function init_gameplay()
 	pl = player:new()
     alist = {}
 
-	-- m1 = myrtle:new({x=9,y=4,z=12})
-	-- add(alist,m1)
-	-- m2 = myrtle:new({x=9,y=6,z=12})
-	-- add(alist,m2)
-
-	-- g = goal:new({x=12,y=8,z=10})
-	-- add(alist,g)
 	guns=0
 	gunsmax=0
 	kills=0
@@ -109,6 +102,9 @@ function draw_3d()
 	local unit = unit -- localizing for better access
 	local horizon = horizon -- localizing for better access
 	local patterns = patterns -- localizing for better access
+	local drawdist = drawdist -- localizing for better access
+	local flrx = flr(x)
+	local flry = flr(y)
 
 	-- allocate for the loop
 		
@@ -119,8 +115,8 @@ function draw_3d()
 		-- for speed
 		local sy = ystart
 	
-		local ix=flr(x)
-		local iy=flr(y)
+		local ix=flrx --flr(x)
+		local iy=flry --flr(y)
 		local tdist=0
 		local mcol=mget(ix,iy)
 		local col = mcol%16
@@ -131,7 +127,7 @@ function draw_3d()
 		
 		-- calc cast vector
 		local dist_x, dist_y
-		local last_dir
+		-- local last_dir
 		local t=sx/127
 		
 		local vx = x0 * (1-t) + x1 * t
@@ -155,19 +151,18 @@ function draw_3d()
 		
 		-- start skipping
 		local skip=true
-		local lower_elevation=false
 
 		while (skip) do
-			
+
 			if (dist_x < dist_y) then
 				ix=ix+dir_x
-				last_dir = 0
+				-- last_dir = 0
 				dist_y = dist_y - dist_x
 				tdist = tdist + dist_x
 				dist_x = skip_x
 			else
 				iy=iy+dir_y
-				last_dir = 1
+				-- last_dir = 1
 				dist_x = dist_x - dist_y
 				tdist = tdist + dist_y
 				dist_y = skip_y
@@ -192,11 +187,9 @@ function draw_3d()
 				celz=16-col*.5 -- inlined for speed
 				
 				
-				if (col==15) then skip=false end
+				if (col==15) skip = false
 				if (tdist > drawdist) skip = false --max draw distance
 				
-				--discard close hits
-				if (tdist > 0.005) then
 				
 				-- screen space
 				local sy1 = ((celz0-z)*scale)+horizon -- inlined
@@ -219,7 +212,8 @@ function draw_3d()
 
 					if (sy1 < sy) then
 						local wallx
-						if last_dir == 0 then
+						-- if last_dir == 0 then
+						if dist_x == skip_x then
 							wallx = (y + tdist*vy)%1
 						else
 							wallx = (x + tdist*vx)%1
@@ -237,8 +231,6 @@ function draw_3d()
 					-- flip()
 				end
 			end
-			
-		end   
 	
 		end -- skipping
 		deptharray[sx]=depthi	
