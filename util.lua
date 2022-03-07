@@ -10,7 +10,7 @@ horizon = 48
 resolution = 1
 viewheight = 128
 viewcenter = 64--viewheight/2
-drawdist = 30
+drawdist = 40
 
 --camera plane info
 xplane0 = cos(fov/2) 

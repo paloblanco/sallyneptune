@@ -91,23 +91,28 @@ end
 function draw_3d()
 	poke(0x5F38, 1) -- horiz loop tline
 	poke(0x5F39, 1) -- vert loop tline
-	local celz0
-	local col
+	-- local celz0
+	-- local col
 	local deptharray = {}
 	
 	-- calculate view plane
 	
-	local v = pl:return_view()
+	local x0,y0,x1,y1 = pl:return_view()
 	-- camera based on player pos
 	local x=pl.x
 	local y=pl.y
 	-- (player eye 1.5 units high)
 	local z=pl.z-1
-	local res = resolution-1
 	local ystart = viewheight-1
 	local ymid = viewcenter
+	local tileinfo = tileinfo -- localizing for better access
+	local unit = unit -- localizing for better access
+	local horizon = horizon -- localizing for better access
+	local patterns = patterns -- localizing for better access
+
+	-- allocate for the loop
 		
-	for sx=0,127,resolution do
+	for sx=0,127,1 do
 		local depthi = {}
 	
 		-- make all of these local
@@ -117,21 +122,20 @@ function draw_3d()
 		local ix=flr(x)
 		local iy=flr(y)
 		local tdist=0
-		local col=mget(ix,iy)
-		local mcol = col
-		local tiletype = tileinfo[col\16]
-		local spr_ix = tiletype[1]
+		local mcol=mget(ix,iy)
+		local col = mcol%16
+		local tiletype = tileinfo[mcol\16]
+		-- local spr_ix = tiletype[1]
 		local g_color =  tiletype[2]
-		col = col%16
 		local celz=16-col*.5
 		
 		-- calc cast vector
-		local dist_x, dist_y,vx,vy
+		local dist_x, dist_y
 		local last_dir
 		local t=sx/127
 		
-		vx = v.x0 * (1-t) + v.x1 * t
-		vy = v.y0 * (1-t) + v.y1 * t
+		local vx = x0 * (1-t) + x1 * t
+		local vy = y0 * (1-t) + y1 * t
 		local dir_x = sgn(vx)
 		local dir_y = sgn(vy)
 		local skip_x = 1/abs(vx)
@@ -155,7 +159,6 @@ function draw_3d()
 
 		while (skip) do
 			
-			
 			if (dist_x < dist_y) then
 				ix=ix+dir_x
 				last_dir = 0
@@ -169,25 +172,22 @@ function draw_3d()
 				tdist = tdist + dist_y
 				dist_y = skip_y
 			end
-			local scale = unit/tdist
 			-- prev cel properties
-			mcol0=mcol
-			celz0=celz
-			local g_color0 = g_color
+			local mcol0=mcol
 			
 			-- new cel properties
-			col=mget(ix,iy)
-			mcol=col
-			
+			mcol=mget(ix,iy)
+						
 			if mcol != mcol0 then
-				tiletype = tileinfo[col\16]
-				spr_ix = tiletype[1]
+				-- local col=mcol
+				local celz0=celz
+				local tiletype = tileinfo[mcol\16]
+				local scale = unit/tdist
 				poke(0x5F3A, tiletype[3])
 				poke(0x5F3B, tiletype[4])
-				-- spr_x_coord = (spr_ix%16)*8
-				-- spr_y_coord = (spr_ix\16)*8
+				local g_color0 = g_color
 				g_color =  tiletype[2]
-				col = col%16
+				local col = mcol%16
 
 				celz=16-col*.5 -- inlined for speed
 				
@@ -197,11 +197,9 @@ function draw_3d()
 				
 				--discard close hits
 				if (tdist > 0.005) then
-				-- screen space
 				
-				local sy1 = celz0-z
-				sy1 = sy1 * scale
-				sy1 = sy1 + horizon -- horizon 
+				-- screen space
+				local sy1 = ((celz0-z)*scale)+horizon -- inlined
 				
 				-- draw ground to new point
 				
@@ -217,35 +215,20 @@ function draw_3d()
 
 				-- draw wall if higher
 				if (celz < celz0) then
-					-- local wallx
-					if last_dir == 0 then
-						wallx = (y + tdist*vy)%1
-					else
-						wallx = (x + tdist*vx)%1
-					end
-					local pixx = flr(wallx*8)
-					sy1 = celz-z
-					
-					sy1 = sy1 * scale
-					sy1 = sy1 + horizon -- horizon 
+					sy1 = ((celz-z)*scale) + horizon
+
 					if (sy1 < sy) then
+						local wallx
+						if last_dir == 0 then
+							wallx = (y + tdist*vy)%1
+						else
+							wallx = (x + tdist*vx)%1
+						end
 						palt(0,false)
 						fillp(patterns[min(flr(tdist/3),8)])
-						local wcol=7 + (last_dir)*6
+						-- local wcol=7 + (last_dir)*6
 						-- rectfill(sx,sy1-1,sx+res,sy,wcol) -- wall draw
 						tline(sx,sy1-1,sx,sy,wallx,0,0,(1/scale))
-
-						-- local yf = sy1
-						-- while yf+1 < sy do
-						-- 	local ystep = yscale
-						-- 	if yf+ystep > -1 then
-						-- 		if (sy < 127) ystep = min(yscale,sy-yf)
-						-- 		local dyspr = .5+8*ystep/yscale --  add .5 to improve tex tearing
-						-- 		sspr(spr_x_coord+pixx,spr_y_coord,1,dyspr,sx,yf,resolution,ystep+1)
-						-- 	end
-						-- 	yf = yf+yscale
-						-- end
-						-- line(sx,sy,sx+res,sy,0) -- accent
 						sy=sy1
 						fillp()
 						add(depthi,{tdist,sy1})

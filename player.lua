@@ -33,10 +33,10 @@ function player:update(target)
 end
 
 function player:return_view()
-    local v={}
-	v.x0 = cos(self.d+fov/2) 
-	v.y0 = sin(self.d+fov/2)
-	v.x1 = cos(self.d-fov/2)
-	v.y1 = sin(self.d-fov/2)
-    return v
+    -- local v={}
+	local x0 = cos(self.d+fov/2) 
+	local y0 = sin(self.d+fov/2)
+	local x1 = cos(self.d-fov/2)
+	local y1 = sin(self.d-fov/2)
+    return x0,y0,x1,y1
 end
