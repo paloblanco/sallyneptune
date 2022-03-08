@@ -108,6 +108,7 @@ function draw_3d()
 
 	-- allocate for the loop
 		
+	-- for sx=0,127,1 do
 	for sx=0,127,1 do
 		local depthi = {}
 	
@@ -197,7 +198,13 @@ function draw_3d()
 				-- draw ground to new point
 				
 				if (sy1 < sy) then
+					-- local fillval = min(flr(tdist/3),8)
+					-- local sydist = sy1 - sy
+					-- fillp(patterns[min(flr(tdist/3),8)])
 					line(sx,sy1-1,sx,sy,g_color0) -- floor drawing
+					-- pset(sx,sy,0)
+					-- pset(sx,sy-1,0)
+					
 					sy=sy1
 				end
 				
@@ -214,17 +221,20 @@ function draw_3d()
 						local wallx
 						-- if last_dir == 0 then
 						if dist_x == skip_x then
-							wallx = (y + tdist*vy)%1
+							wallx = .5*((y + tdist*vy)%2)
 						else
-							wallx = (x + tdist*vx)%1
+							wallx = .5*((x + tdist*vx)%2)
 						end
 						palt(0,false)
-						fillp(patterns[min(flr(tdist/3),8)])
+						-- fillp(patterns[min(flr(tdist/3),8)])
 						-- local wcol=7 + (last_dir)*6
 						-- rectfill(sx,sy1-1,sx+res,sy,wcol) -- wall draw
-						tline(sx,sy1-1,sx,sy,wallx,0,0,(1/scale))
+						tline(sx,sy1-1,sx,sy,wallx,0,0,(.5/scale))
+						-- pset(sx,sy,0)
+						-- pset(sx,sy1-1,0)
+						-- tline(sx+1,sy1-1,sx+1,sy,wallx,0,0,(.5/scale))
 						sy=sy1
-						fillp()
+						-- fillp()
 						add(depthi,{tdist,sy1})
 						palt()
 					end
