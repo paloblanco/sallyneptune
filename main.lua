@@ -12,13 +12,6 @@ function init_gameplay()
 	pl = player:new()
     alist = {}
 
-	-- m1 = myrtle:new({x=9,y=4,z=12})
-	-- add(alist,m1)
-	-- m2 = myrtle:new({x=9,y=6,z=12})
-	-- add(alist,m2)
-
-	-- g = goal:new({x=12,y=8,z=10})
-	-- add(alist,g)
 	guns=0
 	gunsmax=0
 	kills=0
@@ -89,46 +82,57 @@ end
 
 
 function draw_3d()
-	local celz0
-	local col
+	poke(0x5F38, 1) -- horiz loop tline
+	poke(0x5F39, 1) -- vert loop tline
+	-- local celz0
+	-- local col
 	local deptharray = {}
 	
 	-- calculate view plane
 	
-	local v = pl:return_view()
+	local x0,y0,x1,y1 = pl:return_view()
 	-- camera based on player pos
 	local x=pl.x
 	local y=pl.y
 	-- (player eye 1.5 units high)
 	local z=pl.z-1
-	local res = resolution-1
 	local ystart = viewheight-1
 	local ymid = viewcenter
+	local tileinfo = tileinfo -- localizing for better access
+	local unit = unit -- localizing for better access
+	local horizon = horizon -- localizing for better access
+	local patterns = patterns -- localizing for better access
+	local drawdist = drawdist -- localizing for better access
+	local flrx = flr(x)
+	local flry = flr(y)
+
+	-- allocate for the loop
 		
-	for sx=0,127,resolution do
+	-- for sx=0,127,1 do
+	for sx=0,127,1 do
 		local depthi = {}
 	
 		-- make all of these local
 		-- for speed
 		local sy = ystart
 	
-		local ix=flr(x)
-		local iy=flr(y)
+		local ix=flrx --flr(x)
+		local iy=flry --flr(y)
 		local tdist=0
-		local col=mget(ix,iy)
-		local tiletype = tileinfo[col\16]
-		local spr_ix = tiletype[1]
+		local mcol=mget(ix,iy)
+		local col = mcol%16
+		local tiletype = tileinfo[mcol\16]
+		-- local spr_ix = tiletype[1]
 		local g_color =  tiletype[2]
-		col = col%16
 		local celz=16-col*.5
 		
 		-- calc cast vector
-		local dist_x, dist_y,vx,vy
-		local last_dir
+		local dist_x, dist_y
+		-- local last_dir
 		local t=sx/127
 		
-		vx = v.x0 * (1-t) + v.x1 * t
-		vy = v.y0 * (1-t) + v.y1 * t
+		local vx = x0 * (1-t) + x1 * t
+		local vy = y0 * (1-t) + y1 * t
 		local dir_x = sgn(vx)
 		local dir_y = sgn(vy)
 		local skip_x = 1/abs(vx)
@@ -148,119 +152,95 @@ function draw_3d()
 		
 		-- start skipping
 		local skip=true
-		local wall_prev=false
-		local lower_elevation=false
-		lowcount=0
 
 		while (skip) do
-			
-			
+
 			if (dist_x < dist_y) then
 				ix=ix+dir_x
-				last_dir = 0
+				-- last_dir = 0
 				dist_y = dist_y - dist_x
 				tdist = tdist + dist_x
 				dist_x = skip_x
 			else
 				iy=iy+dir_y
-				last_dir = 1
+				-- last_dir = 1
 				dist_x = dist_x - dist_y
 				tdist = tdist + dist_y
 				dist_y = skip_y
 			end
-			
 			-- prev cel properties
-			col0=col
-			celz0=celz
-			local g_color0 = g_color
+			local mcol0=mcol
 			
 			-- new cel properties
-			col=mget(ix,iy)
-			tiletype = tileinfo[col\16]
-			spr_ix = tiletype[1]
-			spr_x_coord = (spr_ix%16)*8
-			spr_y_coord = (spr_ix\16)*8
-			g_color =  tiletype[2]
-			col = col%16
+			mcol=mget(ix,iy)
+						
+			if mcol != mcol0 then
+				-- local col=mcol
+				local celz0=celz
+				local tiletype = tileinfo[mcol\16]
+				local scale = unit/tdist
+				poke(0x5F3A, tiletype[3])
+				poke(0x5F3B, tiletype[4])
+				local g_color0 = g_color
+				g_color =  tiletype[2]
+				local col = mcol%16
 
-			celz=16-col*.5 -- inlined for speed
-			
-			
-			if (col==15) then skip=false end
-			if (tdist > 45) skip = false --max draw distance
-			
-			--discard close hits
-			if (tdist > 0.005) then
-			-- screen space
-			
-			local sy1 = celz0-z
-			-- sy1 = (sy1 * ymid)/tdist
-			sy1 = (sy1 * unit)/tdist
-			sy1 = sy1 + horizon -- horizon 
-			
-			-- draw ground to new point
-			
-			if (sy1 < sy) then
-				rectfill(sx,sy1-1,sx+res,sy,g_color0) -- floor drawing
-				line(sx,sy,sx+res,sy,5) -- floor accent
-				if (wall_prev) then
-					line(sx,sy,sx+1,sy,0)
-					wall_prev=false
-				end	
-				if lower_elevation then
-					line(sx,sy,sx+res,sy,0)
-					lower_elevation=false
-				end
-				sy=sy1
-			end
-			
-			--lower floor?
-			if (celz>celz0) then
-				lower_elevation=true
-				lowcount = lowcount +1
-				add(depthi,{tdist,sy1})
-			end
-
-			-- draw wall if higher
-			if (celz < celz0) then
-				-- local wallx
-				if last_dir == 0 then
-					wallx = (y + tdist*vy)%1
-				else
-					wallx = (x + tdist*vx)%1
-				end
-				local pixx = flr(wallx*8)
-				local sy1 = celz-z
-				local yscale = unit/tdist
-				sy1 = sy1 * yscale
-				sy1 = sy1 + horizon -- horizon 
+				celz=16-col*.5 -- inlined for speed
+				
+				
+				if (col==15) skip = false
+				if (tdist > drawdist) skip = false --max draw distance
+				
+				
+				-- screen space
+				local sy1 = ((celz0-z)*scale)+horizon -- inlined
+				
+				-- draw ground to new point
+				
 				if (sy1 < sy) then
-					palt(0,false)
-					fillp(patterns[min(flr(tdist/3),8)])
-					local wcol=7 + (last_dir)*6
-					-- rectfill(sx,sy1-1,sx+res,sy,wcol) -- wall draw
-					local yf = sy1
-					while yf+1 < sy do
-						local ystep = yscale
-						if yf+ystep > -1 then
-							if (sy < 127) ystep = min(yscale,sy-yf)
-							local dyspr = .5+8*ystep/yscale --  add .5 to improve tex tearing
-							sspr(spr_x_coord+pixx,spr_y_coord,1,dyspr,sx,yf,resolution,ystep+1)
-						end
-						yf = yf+yscale
-					end
-					line(sx,sy,sx+res,sy,0) -- accent
+					-- local fillval = min(flr(tdist/3),8)
+					-- local sydist = sy1 - sy
+					-- fillp(patterns[min(flr(tdist/3),8)])
+					line(sx,sy1-1,sx,sy,g_color0) -- floor drawing
+					-- pset(sx,sy,0)
+					-- pset(sx,sy-1,0)
+					
 					sy=sy1
-					fillp()
-					wall_prev=true
-					add(depthi,{tdist,sy1})
-					palt()
 				end
-				-- flip()
+				
+				--lower floor?
+				if (celz>celz0) then
+					add(depthi,{tdist,sy1})
+				end
+
+				-- draw wall if higher
+				if (celz < celz0) then
+					sy1 = ((celz-z)*scale) + horizon
+
+					if (sy1 < sy) then
+						local wallx
+						-- if last_dir == 0 then
+						if dist_x == skip_x then
+							wallx = .5*((y + tdist*vy)%2)
+						else
+							wallx = .5*((x + tdist*vx)%2)
+						end
+						palt(0,false)
+						-- fillp(patterns[min(flr(tdist/3),8)])
+						-- local wcol=7 + (last_dir)*6
+						-- rectfill(sx,sy1-1,sx+res,sy,wcol) -- wall draw
+						tline(sx,sy1-1,sx,sy,wallx,0,0,(.5/scale))
+						-- pset(sx,sy,0)
+						-- pset(sx,sy1-1,0)
+						-- tline(sx+1,sy1-1,sx+1,sy,wallx,0,0,(.5/scale))
+						sy=sy1
+						-- fillp()
+						add(depthi,{tdist,sy1})
+						palt()
+					end
+					-- flip()
+				end
 			end
-			
-			
-		end   
 	
 		end -- skipping
 		deptharray[sx]=depthi	
@@ -343,6 +323,7 @@ function draw_gameplay()
 	rectfill(30,2,82,5,0)
 	rectfill(31,3,31+healthmeter,4,10)
 	printo("keys: "..cpt.keys.." gun: "..guns,2,10,10,0)
+	printo("cpu: "..stat(1),2,17,10,0)
 
 	if (needkey) printco('you need a key',40,7,0)
         

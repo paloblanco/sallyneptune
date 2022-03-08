@@ -7,9 +7,10 @@ end
 fov = 0.25 -- 0.2 = 72 degrees
 unit= abs(64/sin(fov*.5)) -- how big one block is
 horizon = 48
-resolution = 2
+resolution = 1
 viewheight = 128
 viewcenter = 64--viewheight/2
+drawdist = 40
 
 --camera plane info
 xplane0 = cos(fov/2) 
@@ -49,15 +50,15 @@ colors = {8,9,10,11,12,13,6}
 
 -- tile info - yvalues are keys
 tileinfo={}
-tileinfo[0] = {70,6} -- square block
-tileinfo[1] = {71,5} -- brick
-tileinfo[2] = {136,3} -- brick
-tileinfo[3] = {85,11} -- brick
-tileinfo[4] = {84,1} -- brick
-tileinfo[5] = {80,10} -- emergency
-tileinfo[6] = {74,5}
-tileinfo[7] = {83,7}
-
+tileinfo[0] = {70,6,127,63} -- square block
+tileinfo[1] = {71,5,126,63} -- brick
+tileinfo[2] = {136,3,121,63} -- brick
+tileinfo[3] = {85,11,127,62} -- brick
+tileinfo[4] = {84,1,123,63} -- brick
+tileinfo[5] = {80,10,125,63} -- emergency
+tileinfo[6] = {74,5,124,63}
+tileinfo[7] = {83,7,122,63}
+floort={6,124,63}
 
 
 -- map z
