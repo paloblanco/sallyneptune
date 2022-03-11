@@ -115,7 +115,7 @@ function draw_3d()
 	
 		-- make all of these local
 		-- for speed
-		local sy = ystart
+		local sy = 128--ystart
 	
 		local ix=flrx --flr(x)
 		local iy=flry --flr(y)
@@ -192,8 +192,8 @@ function draw_3d()
 				local sy1 = ((celz0-z)*scale)+horizon -- inlined
 				
 				if (sy1 < sy) then
-					line(sx,sy1-1,sx,sy,g_color0) -- floor drawing
-					pset(sx,sy,0)
+					line(sx,sy1,sx,sy-1,g_color0) -- floor drawing
+					pset(sx,sy1,0) -- not correct
 					sy=sy1
 				end
 				
@@ -216,8 +216,8 @@ function draw_3d()
 						else
 							wallx = .5*((x + tdist*vx)%2)
 						end
-						tline(sx,sy1-1,sx,sy,wallx,0,0,(.5/scale))
-						pset(sx,sy,0)
+						tline(sx,sy1,sx,sy-1,wallx,0,0,(.5/scale))
+						pset(sx,sy1,0)
 						sy=sy1
 						fillp()
 						add(depthi,{tdist,sy1})
