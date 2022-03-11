@@ -176,22 +176,17 @@ function draw_3d()
 			mcol=mget(ix,iy)
 						
 			if mcol != mcol0 then
-				-- local col=mcol
 				local celz0=celz
 				local tiletype = tileinfo[mcol\16]
 				local scale = unit/tdist
-				poke(0x5F3A, tiletype[3])
-				poke(0x5F3B, tiletype[4])
 				local g_color0 = g_color
 				g_color =  tiletype[2]
 				local col = mcol%16
 
 				celz=16-col*.5 -- inlined for speed
 				
-				
 				if (col==15) skip = false
 				if (tdist > drawdist) skip = false --max draw distance
-				
 				
 				-- screen space
 				local sy1 = ((celz0-z)*scale)+horizon -- inlined
@@ -212,6 +207,8 @@ function draw_3d()
 					sy1 = ((celz-z)*scale) + horizon
 
 					if (sy1 < sy) then
+						poke(0x5F3A, tiletype[3])
+						poke(0x5F3B, tiletype[4])
 						local wallx
 						if dist_x == skip_x then
 							wallx = .5*((y + tdist*vy)%2)
@@ -225,8 +222,19 @@ function draw_3d()
 						fillp()
 						add(depthi,{tdist,sy1})
 					end
-					-- flip()
 				end
+			
+			-- else
+			-- 	if (tdist > drawdist) skip = false --max draw distance
+				
+			-- 	-- screen space
+			-- 	local sy1 = (((16-(mcol%16)*.5)-z)*unit/tdist)+horizon -- inlined
+				
+			-- 	if (sy1 < sy) then
+			-- 		line(sx,sy1-1,sx,sy-1,g_color) -- floor drawing
+			-- 		pset(sx,sy-1,1)
+			-- 		sy=sy1
+			-- 	end
 			end
 	
 		end -- skipping
@@ -278,11 +286,24 @@ function update_gameplay()
 	-- if (btnp(4)) flipline = not flipline
 end
 
+function get_gpoints()
+	local pnum=10
+	local ptable={}
+	local i = 0
+	local xoff = 1
+	local yoff = 0
+	while i < pnum do
+
+	end
+end
+
 function draw_gameplay()
 	cls(1)
 	-- to do: sky? stars?
 	-- rectfill(0,0,127,horizon,1)
 	-- rectfill(0,horizon+1,127,127,3)
+
+	-- gpoints = get_gpoints()
 	deptharray = draw_3d()
 	
 	-- sort sprites
