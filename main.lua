@@ -47,6 +47,7 @@ function init_gameplay()
 	
 	timer=0
 	music(-1)
+	flipline=false
 end
 
 function fix_map()
@@ -195,16 +196,9 @@ function draw_3d()
 				-- screen space
 				local sy1 = ((celz0-z)*scale)+horizon -- inlined
 				
-				-- draw ground to new point
-				
 				if (sy1 < sy) then
-					-- local fillval = min(flr(tdist/3),8)
-					-- local sydist = sy1 - sy
-					-- fillp(patterns[min(flr(tdist/3),8)])
 					line(sx,sy1-1,sx,sy,g_color0) -- floor drawing
-					-- pset(sx,sy,0)
-					-- pset(sx,sy-1,0)
-					
+					pset(sx,sy,0)
 					sy=sy1
 				end
 				
@@ -219,24 +213,17 @@ function draw_3d()
 
 					if (sy1 < sy) then
 						local wallx
-						-- if last_dir == 0 then
 						if dist_x == skip_x then
 							wallx = .5*((y + tdist*vy)%2)
+							fillp(0b1111111111111111.011)
 						else
 							wallx = .5*((x + tdist*vx)%2)
 						end
-						palt(0,false)
-						-- fillp(patterns[min(flr(tdist/3),8)])
-						-- local wcol=7 + (last_dir)*6
-						-- rectfill(sx,sy1-1,sx+res,sy,wcol) -- wall draw
 						tline(sx,sy1-1,sx,sy,wallx,0,0,(.5/scale))
-						-- pset(sx,sy,0)
-						-- pset(sx,sy1-1,0)
-						-- tline(sx+1,sy1-1,sx+1,sy,wallx,0,0,(.5/scale))
+						pset(sx,sy,0)
 						sy=sy1
-						-- fillp()
+						fillp()
 						add(depthi,{tdist,sy1})
-						palt()
 					end
 					-- flip()
 				end
@@ -288,12 +275,14 @@ function update_gameplay()
 		end
 		start_gameover()
 	end
+	-- if (btnp(4)) flipline = not flipline
 end
 
 function draw_gameplay()
-	-- cls()
+	cls(1)
 	-- to do: sky? stars?
-	rectfill(0,0,127,viewheight-1,1)
+	-- rectfill(0,0,127,horizon,1)
+	-- rectfill(0,horizon+1,127,127,3)
 	deptharray = draw_3d()
 	
 	-- sort sprites
