@@ -47,6 +47,7 @@ function init_gameplay()
 	
 	timer=0
 	music(-1)
+	flipline=false
 end
 
 function fix_map()
@@ -114,7 +115,7 @@ function draw_3d()
 	
 		-- make all of these local
 		-- for speed
-		local sy = ystart
+		local sy = 128--ystart
 	
 		local ix=flrx --flr(x)
 		local iy=flry --flr(y)
@@ -175,36 +176,24 @@ function draw_3d()
 			mcol=mget(ix,iy)
 						
 			if mcol != mcol0 then
-				-- local col=mcol
 				local celz0=celz
 				local tiletype = tileinfo[mcol\16]
 				local scale = unit/tdist
-				poke(0x5F3A, tiletype[3])
-				poke(0x5F3B, tiletype[4])
 				local g_color0 = g_color
 				g_color =  tiletype[2]
 				local col = mcol%16
 
 				celz=16-col*.5 -- inlined for speed
 				
-				
 				if (col==15) skip = false
 				if (tdist > drawdist) skip = false --max draw distance
-				
 				
 				-- screen space
 				local sy1 = ((celz0-z)*scale)+horizon -- inlined
 				
-				-- draw ground to new point
-				
 				if (sy1 < sy) then
-					-- local fillval = min(flr(tdist/3),8)
-					-- local sydist = sy1 - sy
-					-- fillp(patterns[min(flr(tdist/3),8)])
-					line(sx,sy1-1,sx,sy,g_color0) -- floor drawing
-					-- pset(sx,sy,0)
-					-- pset(sx,sy-1,0)
-					
+					line(sx,sy1,sx,sy-1,g_color0) -- floor drawing
+					pset(sx,sy1,0) -- not correct
 					sy=sy1
 				end
 				
@@ -218,27 +207,33 @@ function draw_3d()
 					sy1 = ((celz-z)*scale) + horizon
 
 					if (sy1 < sy) then
+						poke(0x5F3A, tiletype[3])
+						poke(0x5F3B, tiletype[4])
 						local wallx
-						-- if last_dir == 0 then
 						if dist_x == skip_x then
 							wallx = .5*((y + tdist*vy)%2)
+							fillp(0b1111111111111111.011)
 						else
 							wallx = .5*((x + tdist*vx)%2)
 						end
-						palt(0,false)
-						-- fillp(patterns[min(flr(tdist/3),8)])
-						-- local wcol=7 + (last_dir)*6
-						-- rectfill(sx,sy1-1,sx+res,sy,wcol) -- wall draw
-						tline(sx,sy1-1,sx,sy,wallx,0,0,(.5/scale))
-						-- pset(sx,sy,0)
-						-- pset(sx,sy1-1,0)
-						-- tline(sx+1,sy1-1,sx+1,sy,wallx,0,0,(.5/scale))
+						tline(sx,sy1,sx,sy-1,wallx,0,0,(.5/scale))
+						pset(sx,sy1,0)
 						sy=sy1
-						-- fillp()
+						fillp()
 						add(depthi,{tdist,sy1})
-						palt()
 					end
-					-- flip()
+				end
+			
+			elseif tdist < 7 and tdist > 2 and (dist_x < .3 or dist_y < .3) then
+				if (tdist > drawdist) skip = false --max draw distance
+
+				-- screen space
+				local sy1 = (((16-(mcol%16)*.5)-z)*unit/tdist)+horizon -- inlined
+				
+				if (sy1 < sy) then
+					line(sx,sy1,sx,sy-1,g_color) -- floor drawing
+					pset(sx,sy1,2)
+					sy=sy1
 				end
 			end
 	
@@ -288,14 +283,31 @@ function update_gameplay()
 		end
 		start_gameover()
 	end
+	-- if (btnp(4)) flipline = not flipline
+end
+
+function get_gpoints()
+	local pnum=10
+	local ptable={}
+	local i = 0
+	local xoff = 1
+	local yoff = 0
+	while i < pnum do
+
+	end
 end
 
 function draw_gameplay()
-	-- cls()
+	cls(1)
 	-- to do: sky? stars?
-	rectfill(0,0,127,viewheight-1,1)
+	-- rectfill(0,0,127,horizon,1)
+	-- rectfill(0,horizon+1,127,127,3)
+
+	-- gpoints = get_gpoints()
+	palt(0,false)
 	deptharray = draw_3d()
-	
+	palt()
+
 	-- sort sprites
 	for aa in all(alist) do
 		aa:get_cam_params(pl.x,pl.y,pl.z,pl.d)
@@ -323,7 +335,7 @@ function draw_gameplay()
 	rectfill(30,2,82,5,0)
 	rectfill(31,3,31+healthmeter,4,10)
 	printo("keys: "..cpt.keys.." gun: "..guns,2,10,10,0)
-	printo("cpu: "..stat(1),2,17,10,0)
+	-- printo("cpu: "..stat(1),2,17,10,0)
 
 	if (needkey) printco('you need a key',40,7,0)
         
