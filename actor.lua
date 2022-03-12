@@ -143,9 +143,9 @@ function actor:draw_simple(x,y,z,dir)
     -- fast!
     dist, sx0, sy0, hw = self:draw_prep(x,y,z,dir)
     if (dist == nil) return
-    fillp(patterns[min(flr(dist/3),8)])
+    -- fillp(patterns[min(flr(dist/3),8)])
     sspr(8*(self.sp%16),8*(self.sp\16),self.spsize,self.spsize,sx0,sy0,hw,hw)
-    fillp()
+    -- fillp()
 end
 
 function actor:draw_dumb(x,y,z,dir)
@@ -176,9 +176,9 @@ function actor:draw_dumb(x,y,z,dir)
             end
         end
     end
-    fillp(patterns[min(flr(dist/3),8)])
+    -- fillp(patterns[min(flr(dist/3),8)])
     sspr(8*(self.sp%16),8*(self.sp\16),self.spsize,self.spsize,sx0,sy0,hw,hw)
-    fillp()
+    -- fillp()
 
 end
 
@@ -189,7 +189,7 @@ function actor:draw_best(x,y,z,dir)
     dist, sx0, sy0, hw = self:draw_prep(x,y,z,dir)
     if (dist == nil) return
     local sy1 = sy0+hw
-    fillp(patterns[min(flr(dist/3),8)])
+    -- fillp(patterns[min(flr(dist/3),8)])
     --start checking
     for sxx=sx0,sx0+hw,resolution do
         local syblock=sy1
@@ -212,7 +212,7 @@ function actor:draw_best(x,y,z,dir)
             sspr(spx,spy,pxx,pyy,sxx,sy0,resolution,syblock-sy0)        
         end
     end
-    fillp()
+    -- fillp()
     pal()
 end
 

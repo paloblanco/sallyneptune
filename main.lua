@@ -224,17 +224,17 @@ function draw_3d()
 					end
 				end
 			
-			-- else
-			-- 	if (tdist > drawdist) skip = false --max draw distance
+			elseif tdist < 7 and tdist > 2 and (dist_x < .3 or dist_y < .3) then
+				if (tdist > drawdist) skip = false --max draw distance
+
+				-- screen space
+				local sy1 = (((16-(mcol%16)*.5)-z)*unit/tdist)+horizon -- inlined
 				
-			-- 	-- screen space
-			-- 	local sy1 = (((16-(mcol%16)*.5)-z)*unit/tdist)+horizon -- inlined
-				
-			-- 	if (sy1 < sy) then
-			-- 		line(sx,sy1-1,sx,sy-1,g_color) -- floor drawing
-			-- 		pset(sx,sy-1,1)
-			-- 		sy=sy1
-			-- 	end
+				if (sy1 < sy) then
+					line(sx,sy1,sx,sy-1,g_color) -- floor drawing
+					pset(sx,sy1,2)
+					sy=sy1
+				end
 			end
 	
 		end -- skipping
@@ -304,8 +304,10 @@ function draw_gameplay()
 	-- rectfill(0,horizon+1,127,127,3)
 
 	-- gpoints = get_gpoints()
+	palt(0,false)
 	deptharray = draw_3d()
-	
+	palt()
+
 	-- sort sprites
 	for aa in all(alist) do
 		aa:get_cam_params(pl.x,pl.y,pl.z,pl.d)
@@ -333,7 +335,7 @@ function draw_gameplay()
 	rectfill(30,2,82,5,0)
 	rectfill(31,3,31+healthmeter,4,10)
 	printo("keys: "..cpt.keys.." gun: "..guns,2,10,10,0)
-	printo("cpu: "..stat(1),2,17,10,0)
+	-- printo("cpu: "..stat(1),2,17,10,0)
 
 	if (needkey) printco('you need a key',40,7,0)
         
