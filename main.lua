@@ -116,6 +116,7 @@ function draw_3d()
 		-- make all of these local
 		-- for speed
 		local sy = 128--ystart
+		local syc = -1 -- ceiling
 	
 		local ix=flrx --flr(x)
 		local iy=flry --flr(y)
@@ -187,14 +188,22 @@ function draw_3d()
 				
 				if (col==15) skip = false
 				if (tdist > drawdist) skip = false --max draw distance
+				if (syc >= sy) skip = false
 				
 				-- screen space
 				local sy1 = ((celz0-z)*scale)+horizon -- inlined
+				local syc1 = ((8.5-z)*scale)+horizon -- inlined, hardcoded height right now
+				syc1 = min(sy,syc1)
 				
 				if (sy1 < sy) then
 					line(sx,sy1,sx,sy-1,g_color0) -- floor drawing
-					pset(sx,sy1,0) -- not correct
+					pset(sx,sy1,0) 
 					sy=sy1
+				end
+				if (syc1 > syc) then
+					line(sx,syc1,sx,syc+1,g_color0) -- ceiling drawing
+					pset(sx,syc1,0) 
+					syc=syc1
 				end
 				
 				--lower floor?
@@ -299,11 +308,15 @@ end
 
 function draw_gameplay()
 	cls(1)
-	-- to do: sky? stars?
-	-- rectfill(0,0,127,horizon,1)
-	-- rectfill(0,horizon+1,127,127,3)
+	scenery = pl.d
+	if (scenery > .5) scenery = scenery-1
+	circfill(64+64*8*scenery,horizon,36,2)
+	circfill(-64+64*8*scenery,horizon,36,6)
+	circfill(-192+64*8*scenery,horizon,36,10)
+	circfill(192+64*8*scenery,horizon,36,14)
+	
 
-	-- gpoints = get_gpoints()
+
 	palt(0,false)
 	deptharray = draw_3d()
 	palt()
@@ -335,7 +348,7 @@ function draw_gameplay()
 	rectfill(30,2,82,5,0)
 	rectfill(31,3,31+healthmeter,4,10)
 	printo("keys: "..cpt.keys.." gun: "..guns,2,10,10,0)
-	-- printo("cpu: "..stat(1),2,17,10,0)
+	printo(scenery,2,17,10,0)
 
 	if (needkey) printco('you need a key',40,7,0)
         
