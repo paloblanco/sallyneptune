@@ -124,7 +124,7 @@ function draw_3d()
 		-- local spr_ix = tiletype[1]
 		local g_color =  tiletype[2]
 		local celz = 16-col*.5
-		local celzc = 7.5 + (1+sgn(col-1))*.5
+		local celzc = 6.5 + 2*(1+sgn(col-1))*.5
 		
 		-- calc cast vector
 		local dist_x, dist_y
@@ -184,7 +184,7 @@ function draw_3d()
 				local col = mcol%16
 
 				celz=16-col*.5 -- inlined for speed
-				celzc = 7.5 + (1+sgn(col-1))*.5
+				celzc = 6.5 + 2*(1+sgn(col-1))*.5
 				
 				if (col==15) skip = false
 				if (tdist > drawdist) skip = false --max draw distance
@@ -214,8 +214,9 @@ function draw_3d()
 				-- draw wall if higher
 				if (celz < celz0) or (celzc > celzc0) then
 					sy1 = ((celz-z)*scale) + horizon
-					syc1 = ((celzc-z)*scale) + horizon 
-					syc1 = min(min(sy1,syc1),sy)
+					local syc1raw = ((celzc-z)*scale) + horizon 
+					local syc1 = min(min(sy1,syc1raw),sy)
+					local coff = (syc1raw-syc1)/scale
 
 					poke(0x5F3A, tiletype[3])
 					poke(0x5F3B, tiletype[4])
@@ -235,7 +236,9 @@ function draw_3d()
 						add(depthi,{tdist,sy1})
 					end
 					if (syc1 > syc) then						
-						tline(sx,syc+1,sx,syc1-1,wallx,0,0,(.5/scale))
+						-- poke(0x5F3B, -coff)
+						tline(sx,syc1-1,sx,syc+1,wallx,coff*.5,0,(.5/scale))
+						-- poke(0x5F3B, 0)
 						pset(sx,syc1,0)
 						syc=syc1
 						-- add(depthi,{tdist,sy1})
