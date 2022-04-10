@@ -124,7 +124,7 @@ function draw_3d()
 		-- local spr_ix = tiletype[1]
 		local g_color =  tiletype[2]
 		local celz = 16-col*.5
-		local celzc = 8.5 + (1+sgn(col-1))*.5
+		local celzc = 7.5 + (1+sgn(col-1))*.5
 		
 		-- calc cast vector
 		local dist_x, dist_y
@@ -184,16 +184,16 @@ function draw_3d()
 				local col = mcol%16
 
 				celz=16-col*.5 -- inlined for speed
-				celzc = 8.5 + (1+sgn(col-1))*.5
+				celzc = 7.5 + (1+sgn(col-1))*.5
 				
 				if (col==15) skip = false
 				if (tdist > drawdist) skip = false --max draw distance
-				if (syc >= sy) skip = false
+				
 				
 				-- screen space
 				local sy1 = ((celz0-z)*scale)+horizon -- inlined
 				local syc1 = ((celzc0-z)*scale)+horizon -- inlined
-				syc1 = min(sy,syc1)
+				syc1 = min(min(sy1,syc1),sy)
 				
 				if (sy1 < sy) then
 					line(sx,sy1,sx,sy-1,g_color0) -- floor drawing
@@ -214,7 +214,8 @@ function draw_3d()
 				-- draw wall if higher
 				if (celz < celz0) or (celzc > celzc0) then
 					sy1 = ((celz-z)*scale) + horizon
-					syc1 = ((celzc-z)*scale)+horizon 
+					syc1 = ((celzc-z)*scale) + horizon 
+					syc1 = min(min(sy1,syc1),sy)
 
 					poke(0x5F3A, tiletype[3])
 					poke(0x5F3B, tiletype[4])
@@ -231,16 +232,15 @@ function draw_3d()
 						tline(sx,sy1,sx,sy-1,wallx,0,0,(.5/scale))
 						pset(sx,sy1,0)
 						sy=sy1
-						fillp()
 						add(depthi,{tdist,sy1})
 					end
 					if (syc1 > syc) then						
 						tline(sx,syc+1,sx,syc1-1,wallx,0,0,(.5/scale))
 						pset(sx,syc1,0)
 						syc=syc1
-						fillp()
 						-- add(depthi,{tdist,sy1})
 					end
+					fillp()
 
 				end
 			
@@ -256,6 +256,7 @@ function draw_3d()
 					sy=sy1
 				end
 			end
+			if (syc >= sy) skip = false
 	
 		end -- skipping
 		deptharray[sx]=depthi	
