@@ -85,16 +85,15 @@ end
 function draw_3d()
 	poke(0x5F38, 1) -- horiz loop tline
 	poke(0x5F39, 1) -- vert loop tline
-	-- local celz0
-	-- local col
 	local deptharray = {}
-	
+
 	-- calculate view plane
-	
 	local x0,y0,x1,y1 = pl:return_view()
+
 	-- camera based on player pos
 	local x=pl.x
 	local y=pl.y
+
 	-- (player eye 1.5 units high)
 	local z=pl.z-1
 	local ystart = viewheight-1
@@ -113,10 +112,9 @@ function draw_3d()
 	for sx=0,127,1 do
 		local depthi = {}
 	
-		-- make all of these local
-		-- for speed
+		-- make all of these local for speed
 		local sy = 128--ystart
-	
+		local syc = -1 -- ceiling
 		local ix=flrx --flr(x)
 		local iy=flry --flr(y)
 		local tdist=0
@@ -125,7 +123,8 @@ function draw_3d()
 		local tiletype = tileinfo[mcol\16]
 		-- local spr_ix = tiletype[1]
 		local g_color =  tiletype[2]
-		local celz=16-col*.5
+		local celz = 16-col*.5
+		local celzc = 6.5 + 2*(1+sgn(col-1))*.5
 		
 		-- calc cast vector
 		local dist_x, dist_y
@@ -177,6 +176,7 @@ function draw_3d()
 						
 			if mcol != mcol0 then
 				local celz0=celz
+				local celzc0=celzc
 				local tiletype = tileinfo[mcol\16]
 				local scale = unit/tdist
 				local g_color0 = g_color
@@ -184,17 +184,26 @@ function draw_3d()
 				local col = mcol%16
 
 				celz=16-col*.5 -- inlined for speed
+				celzc = 6.5 + 2*(1+sgn(col-1))*.5
 				
 				if (col==15) skip = false
 				if (tdist > drawdist) skip = false --max draw distance
 				
+				
 				-- screen space
 				local sy1 = ((celz0-z)*scale)+horizon -- inlined
+				local syc1 = ((celzc0-z)*scale)+horizon -- inlined
+				syc1 = min(min(sy1,syc1),sy)
 				
 				if (sy1 < sy) then
 					line(sx,sy1,sx,sy-1,g_color0) -- floor drawing
-					pset(sx,sy1,0) -- not correct
+					pset(sx,sy1,0) 
 					sy=sy1
+				end
+				if (syc1 > syc) then
+					line(sx,syc1,sx,syc+1,g_color0) -- ceiling drawing
+					-- pset(sx,syc1,0) 
+					syc=syc1
 				end
 				
 				--lower floor?
@@ -203,25 +212,39 @@ function draw_3d()
 				end
 
 				-- draw wall if higher
-				if (celz < celz0) then
+				if (celz < celz0) or (celzc > celzc0) then
 					sy1 = ((celz-z)*scale) + horizon
+					local syc1raw = ((celzc-z)*scale) + horizon 
+					local syc1 = min(min(sy1,syc1raw),sy)
+					local coff = (syc1raw-syc1)/scale
 
-					if (sy1 < sy) then
-						poke(0x5F3A, tiletype[3])
-						poke(0x5F3B, tiletype[4])
-						local wallx
-						if dist_x == skip_x then
-							wallx = .5*((y + tdist*vy)%2)
-							fillp(0b1111111111111111.011)
-						else
-							wallx = .5*((x + tdist*vx)%2)
-						end
+					poke(0x5F3A, tiletype[3])
+					poke(0x5F3B, tiletype[4])
+
+					local wallx
+					if dist_x == skip_x then
+						wallx = .5*((y + tdist*vy)%2)
+						fillp(0b1111111111111111.011)
+					else
+						wallx = .5*((x + tdist*vx)%2)
+					end
+
+					if (sy1 < sy) then						
 						tline(sx,sy1,sx,sy-1,wallx,0,0,(.5/scale))
 						pset(sx,sy1,0)
 						sy=sy1
-						fillp()
 						add(depthi,{tdist,sy1})
 					end
+					if (syc1 > syc) then						
+						-- poke(0x5F3B, -coff)
+						tline(sx,syc1-1,sx,syc+1,wallx,coff*.5,0,(.5/scale))
+						-- poke(0x5F3B, 0)
+						pset(sx,syc1,0)
+						syc=syc1
+						-- add(depthi,{tdist,sy1})
+					end
+					fillp()
+
 				end
 			
 			elseif tdist < 7 and tdist > 2 and (dist_x < .3 or dist_y < .3) then
@@ -236,6 +259,7 @@ function draw_3d()
 					sy=sy1
 				end
 			end
+			if (syc >= sy) skip = false
 	
 		end -- skipping
 		deptharray[sx]=depthi	
@@ -299,11 +323,15 @@ end
 
 function draw_gameplay()
 	cls(1)
-	-- to do: sky? stars?
-	-- rectfill(0,0,127,horizon,1)
-	-- rectfill(0,horizon+1,127,127,3)
+	scenery = pl.d
+	if (scenery > .5) scenery = scenery-1
+	circfill(64+64*8*scenery,horizon,36,2)
+	circfill(-64+64*8*scenery,horizon,36,6)
+	circfill(-192+64*8*scenery,horizon,36,10)
+	circfill(192+64*8*scenery,horizon,36,14)
+	
 
-	-- gpoints = get_gpoints()
+
 	palt(0,false)
 	deptharray = draw_3d()
 	palt()
@@ -335,7 +363,7 @@ function draw_gameplay()
 	rectfill(30,2,82,5,0)
 	rectfill(31,3,31+healthmeter,4,10)
 	printo("keys: "..cpt.keys.." gun: "..guns,2,10,10,0)
-	-- printo("cpu: "..stat(1),2,17,10,0)
+	printo(scenery,2,17,10,0)
 
 	if (needkey) printco('you need a key',40,7,0)
         
