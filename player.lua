@@ -13,6 +13,9 @@ function player:update(target)
 	self.x = target.x
 	self.y = target.y
 	self.z = target.z - 1
+
+	self.z = max(self.z,10)
+
 	self.d = target.d
 
 	local xoff = -cos(self.d)*self.camd
