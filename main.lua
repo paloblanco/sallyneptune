@@ -174,6 +174,7 @@ function draw_3d()
 			-- new cel properties
 			mcol=mget(ix,iy)
 						
+			-- if (mcol != mcol0) and (tdist>.001) then
 			if mcol != mcol0 then
 				local celz0=celz
 				local celzc0=celzc
@@ -260,7 +261,7 @@ function draw_3d()
 				end
 			end
 			if (syc >= sy) skip = false
-	
+				
 		end -- skipping
 		deptharray[sx]=depthi	
 	end -- sx
@@ -323,14 +324,7 @@ end
 
 function draw_gameplay()
 	cls(1)
-	scenery = pl.d
-	if (scenery > .5) scenery = scenery-1
-	circfill(64+64*8*scenery,horizon,36,2)
-	circfill(-64+64*8*scenery,horizon,36,6)
-	circfill(-192+64*8*scenery,horizon,36,10)
-	circfill(192+64*8*scenery,horizon,36,14)
 	
-
 
 	palt(0,false)
 	deptharray = draw_3d()
@@ -363,7 +357,7 @@ function draw_gameplay()
 	rectfill(30,2,82,5,0)
 	rectfill(31,3,31+healthmeter,4,10)
 	printo("keys: "..cpt.keys.." gun: "..guns,2,10,10,0)
-	printo(scenery,2,17,10,0)
+	-- printo(scenery,2,17,10,0)
 
 	if (needkey) printco('you need a key',40,7,0)
         
